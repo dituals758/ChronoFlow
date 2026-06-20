@@ -20,9 +20,20 @@
 
 ## Скриншоты
 
-![screen01](./screen01.png)
-![screen02](./screen02.png)
-![screen03](./screen03.png)
+<details>
+<summary>Часы и счётчики</summary>
+<img src="./screen01.png" alt="Главный экран" width="360">
+</details>
+
+<details>
+<summary>Тёмная тема</summary>
+<img src="./screen02.png" alt="Тёмная тема" width="360">
+</details>
+
+<details>
+<summary>Светлая тема</summary>
+<img src="./screen03.png" alt="Светлая тема" width="360">
+</details>
 
 ## Технологии
 
@@ -48,7 +59,10 @@ npx serve .
 ├── app.js            ← логика, Canvas, хранение
 ├── sw.js             ← Service Worker
 ├── manifest.json     ← PWA-манифест
-├── icon.svg          ← иконка приложения
+├── icon.svg          ← иконка приложения (SVG)
+├── icon-180.png      ← иконка для iOS (180x180)
+├── icon-192.png      ← иконка для Android (192x192)
+├── icon-512.png      ← иконка для splash (512x512)
 ├── screen01.png      ← скриншот
 ├── screen02.png      ← скриншот
 ├── screen03.png      ← скриншот
