@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Политика конфиденциальности — ChronoFlow</title>
+    <style>
+        :root { --bg: #000; --surface: #1c1c1e; --text: #fff; --text2: rgba(235,235,245,0.6); --text3: rgba(235,235,245,0.3); --blue: #0a84ff; --sep: rgba(84,84,88,0.65); }
+        .light { --bg: #f2f2f7; --surface: #fff; --text: #000; --text2: rgba(60,60,67,0.6); --text3: rgba(60,60,67,0.3); --sep: rgba(60,60,67,0.29); }
+        @media(prefers-color-scheme:light){:root{--bg:#f2f2f7;--surface:#fff;--text:#000;--text2:rgba(60,60,67,0.6);--text3:rgba(60,60,67,0.3);--sep:rgba(60,60,67,0.29);}}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--bg);color:var(--text);font:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;line-height:1.6;padding:env(safe-area-inset-top) 16px 40px;max-width:680px;margin:0 auto}
+        h1{font-size:28px;font-weight:700;margin:24px 0 8px;letter-spacing:-0.02em}
+        h2{font-size:20px;font-weight:600;margin:24px 0 8px;color:var(--text)}
+        p{font-size:15px;color:var(--text2);margin-bottom:12px}
+        a{color:var(--blue);text-decoration:none}
+        .meta{font-size:13px;color:var(--text3);margin-bottom:24px;border-bottom:0.5px solid var(--sep);padding-bottom:16px}
+        ul{padding-left:20px;margin-bottom:12px}
+        li{font-size:15px;color:var(--text2);margin-bottom:6px}
+        strong{color:var(--text)}
+        hr{border:none;border-top:0.5px solid var(--sep);margin:24px 0}
+    </style>
+</head>
+<body>
+    <h1>Политика конфиденциальности</h1>
+    <p class="meta">Последнее обновление: 20 июня 2026 г.</p>
+
+    <h2>1. Общие сведения</h2>
+    <p><strong>ChronoFlow</strong> — это Progressive Web App (PWA) для отслеживания времени и событий, разработанная <strong>dituals758</strong> при поддержке AI-ассистента <strong>MiMo Code</strong> (Xiaomi MiMo Team).</p>
+    <p>Данная Политика конфиденциальности описывает, как приложение обрабатывает данные пользователей.</p>
+
+    <h2>2. Сбор данных</h2>
+    <p><strong>ChronoFlow НЕ собирает, не хранит и не передаёт никакие данные на внешние серверы.</strong></p>
+    <ul>
+        <li>Все события и настройки хранятся <strong>исключительно локально</strong> на устройстве пользователя (localStorage).</li>
+        <li>Нет регистрации, нет аккаунтов, нет серверной части.</li>
+        <li>Нет аналитики, нет трекеров, нет cookie.</li>
+        <li>Нет доступа к интернету для передачи данных.</li>
+    </ul>
+
+    <h2>3. Service Worker и кэширование</h2>
+    <p>Приложение использует Service Worker для:</p>
+    <ul>
+        <li>Кэширования файлов приложения (HTML, CSS, JS, иконки) для офлайн-работы.</li>
+        <li>Обслуживания приложений из локального кэша при отсутствии интернета.</li>
+    </ul>
+    <p>Service Worker <strong>не отправляет</strong> данные на сторонние серверы и <strong>не отслеживает</strong> активность пользователя.</p>
+
+    <h2>4. Данные, хранящиеся на устройстве</h2>
+    <p>Приложение хранит следующие данные в localStorage:</p>
+    <ul>
+        <li><strong>События</strong> — название и дата/время созданного события.</li>
+        <li><strong>Настройки</strong> — тема оформления, видимость часов.</li>
+    </ul>
+    <p>Эти данные <strong>покидают устройство только</strong> при использовании функции «Экспорт», инициированной пользователем вручную.</p>
+
+    <h2>5. Функция «Поделиться» и импорт</h2>
+    <p>При использовании функций импорта/экспорта данных файлы обрабатываются <strong>полностью на устройстве</strong>. Данные не передаются по сети.</p>
+
+    <h2>6.third-party сервисы</h2>
+    <p>Приложение <strong>не использует</strong> сторонние SDK, библиотеки аналитики, рекламные модули или сервисы мониторинга.</p>
+
+    <h2>7. Дети</h2>
+    <p>Приложение не собирает персональные данные и не имеет возрастных ограничений. Оно безопасно для использования детьми.</p>
+
+    <h2>8. Безопасность</h2>
+    <p>Данные хранятся в защищённом хранилище браузера. Приложение не реализует передачу данных по сети, что исключает риски перехвата.</p>
+
+    <h2>9. Изменения в политике</h2>
+    <p>В случае изменений в Политике конфиденциальности обновлённая версия будет опубликована в этом документе с указанием даты обновления.</p>
+
+    <h2>10. Контакты</h2>
+    <p>По вопросам конфиденциальности обращайтесь:</p>
+    <ul>
+        <li>GitHub: <a href="https://github.com/dituals758">github.com/dituals758</a></li>
+    </ul>
+
+    <hr>
+    <p>© 2026 ChronoFlow. Разработано <strong>dituals758</strong> при поддержке <strong>MiMo Code</strong> (Xiaomi MiMo Team).</p>
+</body>
+</html>

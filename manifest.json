@@ -1,0 +1,19 @@
+{
+    "id": "/",
+    "name": "ChronoFlow — Каждый день считается",
+    "short_name": "ChronoFlow",
+    "description": "Минималистичное приложение для отслеживания времени. Считайте дни до важных событий или после них.",
+    "start_url": "./",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#0a0a12",
+    "theme_color": "#6cc8ff",
+    "orientation": "any",
+    "lang": "ru",
+    "dir": "ltr",
+    "categories": ["productivity", "utilities"],
+    "icons": [
+        { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    ],
+    "features": ["offline"]
+}

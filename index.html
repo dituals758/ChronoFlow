@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#0a0a12" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f5f5fa" media="(prefers-color-scheme: light)">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="ChronoFlow — минималистичное приложение для отслеживания времени. Каждый день считается.">
+    <meta property="og:title" content="ChronoFlow — Каждый день считается">
+    <meta property="og:description" content="Считайте дни: сколько прошло с важной даты или сколько осталось до события.">
+    <meta property="og:type" content="website">
+    <title>ChronoFlow</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./icon.svg">
+    <link rel="apple-touch-icon" href="./icon.svg">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <svg style="position:absolute;width:0;height:0" aria-hidden="true">
+        <defs>
+            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6cc8ff"/>
+                <stop offset="100%" stop-color="#b89cff"/>
+            </linearGradient>
+            <linearGradient id="logoGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2878e8"/>
+                <stop offset="100%" stop-color="#9b6dff"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <a href="#main" class="skip-link">Перейти к содержимому</a>
+
+    <div id="splash" class="splash" aria-hidden="true">
+        <div class="splash-inner">
+            <div class="splash-logo">
+                <svg class="logo accent" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                    <rect x="10" y="4" width="28" height="3" rx="1.5" fill="currentColor"/>
+                    <rect x="10" y="41" width="28" height="3" rx="1.5" fill="currentColor"/>
+                    <path d="M13 7h22v4c0 5-3 9-7 12l-4 3-4-3c-4-3-7-7-7-12V7z" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <path d="M13 41h22v-4c0-5-3-9-7-12l-4-3-4 3c-4 3-7 7-7 12v4z" stroke="currentColor" stroke-width="2" fill="none" opacity=".5"/>
+                    <path d="M24 20v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+                    <circle cx="22" cy="36" r="1.5" fill="currentColor" opacity=".4"/>
+                    <circle cx="26" cy="37" r="1" fill="currentColor" opacity=".25"/>
+                    <circle cx="24" cy="38" r="1.2" fill="currentColor" opacity=".35"/>
+                </svg>
+            </div>
+            <div class="splash-name accent-text">ChronoFlow</div>
+            <div class="splash-sub">Каждый день считается</div>
+            <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+        </div>
+    </div>
+
+    <header role="banner">
+        <div class="hdr">
+            <div class="hdr-left">
+                <div class="hdr-brand">
+                    <svg class="logo accent" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                        <rect x="10" y="4" width="28" height="3" rx="1.5" fill="currentColor"/>
+                        <rect x="10" y="41" width="28" height="3" rx="1.5" fill="currentColor"/>
+                        <path d="M13 7h22v4c0 5-3 9-7 12l-4 3-4-3c-4-3-7-7-7-12V7z" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M13 41h22v-4c0-5-3-9-7-12l-4-3-4 3c-4 3-7 7-7 12v4z" stroke="currentColor" stroke-width="2" fill="none" opacity=".5"/>
+                        <path d="M24 20v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+                        <circle cx="22" cy="36" r="1.5" fill="currentColor" opacity=".4"/>
+                        <circle cx="26" cy="37" r="1" fill="currentColor" opacity=".25"/>
+                        <circle cx="24" cy="38" r="1.2" fill="currentColor" opacity=".35"/>
+                    </svg>
+                    <h1 class="accent-text">ChronoFlow</h1>
+                </div>
+                <span class="hdr-sub" id="hdrSub">Каждый день считается</span>
+            </div>
+            <div class="hdr-right">
+                <div class="hdr-clock" id="hdrClock">
+                    <span id="hdrH">00</span><span class="hdr-colon">:</span><span id="hdrM">00</span><span class="hdr-colon">:</span><span id="hdrS">00</span>
+                    <span class="hdr-date" id="hdrDate"></span>
+                </div>
+                <button id="settingsBtn" class="ibtn-s" aria-label="Настройки" title="Настройки">
+                    <svg class="accent-stroke" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button id="installBtn" class="ibtn hidden" aria-label="Установить приложение" title="Установить">
+                    <svg class="accent-stroke" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 17V3M7 12l5 5 5-5M4 18h16"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="main" role="main">
+        <div class="scroll-page" id="scrollPage">
+            <section id="clockSection" role="region" aria-label="Часы">
+                <div class="clock-wrap" id="clockWrap">
+                    <div class="clock-box">
+                        <canvas id="clockCanvas"></canvas>
+                        <div class="clock-face" id="clockFace">
+                            <div class="time" role="timer" aria-live="polite" aria-atomic="true">
+                                <span id="h" class="tp"></span><span class="tc">:</span><span id="m" class="tp"></span><span class="tc tc2">:</span><span id="s" class="tp ts"></span>
+                            </div>
+                            <div class="sr-only" id="timeAnnounce"></div>
+                            <div class="dt"><div id="dn" class="dn"></div><div id="ds" class="ds"></div></div>
+                            <div id="st" class="st"></div>
+                        </div>
+                    </div>
+                    <div class="clock-stats" id="clockStats">
+                        <div class="cs-row">
+                            <div class="cs-item" id="csTotal">
+                                <div class="cs-val">0</div>
+                                <div class="cs-label">всего</div>
+                            </div>
+                            <div class="cs-divider"></div>
+                            <div class="cs-item" id="csElapsed">
+                                <div class="cs-val">0</div>
+                                <div class="cs-label">прошло</div>
+                            </div>
+                            <div class="cs-divider"></div>
+                            <div class="cs-item" id="csCountdown">
+                                <div class="cs-val">0</div>
+                                <div class="cs-label">осталось</div>
+                            </div>
+                        </div>
+                        <div class="cs-next" id="csNext">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                            <span id="csNextText">Создайте первый счётчик</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="timersSection" role="region" aria-label="Счётчики времени">
+                <div class="section-hdr">
+                    <h2>Счётчики</h2>
+                    <div class="section-actions">
+                        <button id="filterBtn" class="ibtn-s" aria-label="Фильтры" title="Фильтры">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M7 12h10M9 18h6"/></svg>
+                        </button>
+                        <button id="addBtn" class="ibtn-s pri" aria-label="Добавить счётчик" title="Добавить">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="timerList" role="list" aria-label="Список счётчиков"></div>
+                <div id="emptyState" class="empty" role="status">
+                    <div class="empty-anim" aria-hidden="true">
+                        <div class="empty-circle"></div>
+                        <div class="empty-icon">
+                            <svg width="36" height="36" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                                <rect x="10" y="4" width="28" height="3" rx="1.5"/>
+                                <rect x="10" y="41" width="28" height="3" rx="1.5"/>
+                                <path d="M13 7h22v4c0 5-3 9-7 12l-4 3-4-3c-4-3-7-7-7-12V7z"/>
+                                <path d="M13 41h22v-4c0-5-3-9-7-12l-4-3-4 3c-4 3-7 7-7 12v4z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3>Начните считать время</h3>
+                    <p>Создайте первый счётчик и отслеживайте, как меняется ваше время</p>
+                    <button class="btn-p" id="addFirstBtn">Создать первый счётчик</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div class="modal" id="timerModal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+        <div class="mc">
+            <div class="mh">
+                <h2 id="mTitle">Новый счётчик</h2>
+                <button id="closeModal" class="ibtn-s" aria-label="Закрыть" title="Закрыть">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="timerForm" novalidate>
+                <div class="fg">
+                    <label for="timerTitle">Название</label>
+                    <input id="timerTitle" maxlength="50" required placeholder="Например: Не пью, До отпуска..." autocomplete="off" aria-required="true">
+                    <span class="cc" id="titleCnt">0/50</span>
+                </div>
+                <div class="fg">
+                    <label for="timerType">Тип счётчика</label>
+                    <div class="select-wrap">
+                        <select id="timerType">
+                            <option value="elapsed">Сколько прошло (с даты)</option>
+                            <option value="countdown">Сколько осталось (до даты)</option>
+                        </select>
+                        <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                </div>
+                <div class="fg">
+                    <label for="timerDate">Дата</label>
+                    <div class="date-input-wrap">
+                        <input type="datetime-local" id="timerDate" required aria-required="true">
+                        <button type="button" class="date-picker-btn" id="datePickerBtn" aria-label="Открыть календарь" title="Выбрать дату">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="fg">
+                    <label>Цвет</label>
+                    <div class="color-pick" id="colorPick">
+                        <button type="button" class="cp active" data-c="#60cdff" style="--c:#60cdff" aria-label="Голубой"></button>
+                        <button type="button" class="cp" data-c="#b490ff" style="--c:#b490ff" aria-label="Фиолетовый"></button>
+                        <button type="button" class="cp" data-c="#ff7eb3" style="--c:#ff7eb3" aria-label="Розовый"></button>
+                        <button type="button" class="cp" data-c="#00d4aa" style="--c:#00d4aa" aria-label="Бирюзовый"></button>
+                        <button type="button" class="cp" data-c="#ff8c00" style="--c:#ff8c00" aria-label="Оранжевый"></button>
+                        <button type="button" class="cp" data-c="#ff6b6b" style="--c:#ff6b6b" aria-label="Красный"></button>
+                        <button type="button" class="cp" data-c="#6ccb5f" style="--c:#6ccb5f" aria-label="Зелёный"></button>
+                        <button type="button" class="cp cp-custom" id="customColorBtn" aria-label="Свой цвет" title="Свой цвет">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                        </button>
+                        <input type="color" id="customColorInput" value="#60cdff" class="hidden">
+                    </div>
+                </div>
+                <div class="fa">
+                    <button type="button" class="btn-s" id="cancelBtn">Отмена</button>
+                    <button type="submit" class="btn-p" id="saveBtn">Сохранить</button>
+                </div>
+                <div class="fa" id="saveMoreRow" style="display:none">
+                    <button type="button" class="btn-s fw" id="saveMoreBtn">Сохранить и создать ещё</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="fModal" role="dialog" aria-modal="true" aria-label="Фильтры">
+        <div class="mc">
+            <div class="mh">
+                <h2>Фильтры</h2>
+                <button id="closeFModal" class="ibtn-s" aria-label="Закрыть" title="Закрыть">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="fg">
+                <label for="fSelect">Тип</label>
+                <div class="select-wrap">
+                    <select id="fSelect">
+                        <option value="all">Все</option>
+                        <option value="elapsed">Сколько прошло</option>
+                        <option value="countdown">Сколько осталось</option>
+                    </select>
+                    <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+            </div>
+            <div class="fa">
+                <button class="btn-p" id="applyFBtn">Применить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="sModal" role="dialog" aria-modal="true" aria-label="Настройки">
+        <div class="mc">
+            <div class="mh">
+                <div class="mh-title accent-text">
+                    <svg class="accent-stroke" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <h2>Настройки</h2>
+                </div>
+                <button id="closeSModal" class="ibtn-s" aria-label="Закрыть" title="Закрыть">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="sg">
+                <h3>Внешний вид</h3>
+                <div class="sr">
+                    <span>Тема</span>
+                    <div class="select-wrap select-sm">
+                        <select id="themeSel" aria-label="Выбор темы">
+                            <option value="system">Системная</option>
+                            <option value="dark">Тёмная</option>
+                            <option value="light">Светлая</option>
+                        </select>
+                        <svg class="select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                </div>
+                <div class="sr">
+                    <span>Анимации</span>
+                    <label class="sw">
+                        <input type="checkbox" id="animToggle" checked aria-label="Включить анимации">
+                        <span class="sl"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="sg">
+                <h3>Данные</h3>
+                <button class="btn-s fw" id="exportBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+                    Экспорт (JSON)
+                </button>
+                <button class="btn-s fw" id="importBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                    Импорт
+                </button>
+                <button class="btn-d fw" id="clearBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>
+                    Очистить всё
+                </button>
+            </div>
+            <div class="sg">
+                <h3>О приложении</h3>
+                <div class="about">
+                    <div class="about-logo" aria-hidden="true">
+                        <svg class="logo accent" viewBox="0 0 48 48" fill="none">
+                            <rect x="10" y="4" width="28" height="3" rx="1.5" fill="currentColor"/>
+                            <rect x="10" y="41" width="28" height="3" rx="1.5" fill="currentColor"/>
+                            <path d="M13 7h22v4c0 5-3 9-7 12l-4 3-4-3c-4-3-7-7-7-12V7z" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <path d="M13 41h22v-4c0-5-3-9-7-12l-4-3-4 3c-4 3-7 7-7 12v4z" stroke="currentColor" stroke-width="2" fill="none" opacity=".5"/>
+                            <path d="M24 20v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+                            <circle cx="22" cy="36" r="1.5" fill="currentColor" opacity=".4"/>
+                            <circle cx="26" cy="37" r="1" fill="currentColor" opacity=".25"/>
+                            <circle cx="24" cy="38" r="1.2" fill="currentColor" opacity=".35"/>
+                        </svg>
+                    </div>
+                    <div class="about-name accent-text">ChronoFlow</div>
+                    <div class="about-ver">v2026.06.20</div>
+                    <p class="about-tag">Каждый день считается</p>
+                </div>
+                <p class="ai">Минималистичное приложение для отслеживания времени. Считайте дни до важных событий или после них — всё работает полностью офлайн.</p>
+                <ul class="about-features">
+                    <li>Считайте дни без вредной привычки</li>
+                    <li>Отслеживайте стаж на новой работе</li>
+                    <li>Считайте дни до отпуска или важного события</li>
+                    <li>Полная офлайн-работа — ваши данные всегда с вами</li>
+                    <li>Drag-and-drop reorder счётчиков</li>
+                    <li>Тёмная и светлая тема</li>
+                    <li>Экспорт/импорт данных в JSON</li>
+                </ul>
+                <p class="ai" style="margin-top:16px;font-style:italic;color:var(--t3)">«Каждый день на счету. Отслеживайте своё время и меняйте жизнь к лучшему.»</p>
+                <div class="about-links">
+                    <a href="./privacy.html" target="_blank" rel="noopener">Политика конфиденциальности</a>
+                    <a href="./terms.html" target="_blank" rel="noopener">Условия использования</a>
+                    <a href="https://github.com/dituals758/ChronoFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </div>
+                <div class="about-credits">
+                    <p class="ai">Разработано: <strong>dituals758</strong></p>
+                    <p class="ai">AI: <strong>MiMo Code</strong> (Xiaomi)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="confirm-modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMsg">
+        <div class="confirm-backdrop"></div>
+        <div class="confirm-box">
+            <h3 id="confirmTitle">Подтверждение</h3>
+            <p id="confirmMsg">Вы уверены?</p>
+            <div class="confirm-actions">
+                <button class="btn-s" id="confirmCancel">Отмена</button>
+                <button class="btn-d" id="confirmOk">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="importFile" accept=".json" class="hidden" aria-hidden="true">
+    <div class="notif" id="notif" role="alert" aria-live="assertive"></div>
+    <div class="offline-badge" id="offlineBadge" role="status" aria-live="polite">Офлайн</div>
+    <script src="./app.js"></script>
+</body>
+</html>
