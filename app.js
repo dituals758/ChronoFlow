@@ -1,7 +1,8 @@
 (function () {
     'use strict';
 
-    var COLORS = ['#6cc8ff', '#7eacff', '#b89cff', '#ff7eb3', '#ff8c00', '#5cd66e', '#ff6b6b'];
+    var COLORS = ['#5ab0e0', '#7eacff', '#b89cff', '#ff7eb3', '#ff8c00', '#5cd66e', '#ff6b6b'];
+    var DEFAULT_COLOR = '#60cdff';
     var DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
     var DAYS_SHORT = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
     var MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
@@ -16,9 +17,8 @@
     var prevDay = -1;
     var prevHour = -1;
     var lastTick = 0;
-    var colonElements = null;
     var anims = true;
-    var selectedColor = '#60cdff';
+    var selectedColor = DEFAULT_COLOR;
     var installPrompt = null;
     var focusTrap = null;
     var lastFocus = null;
@@ -29,6 +29,7 @@
 
     var canvas, ctx, dpr;
     var canvasW = 0, canvasH = 0;
+    var isTouch = window.matchMedia('(pointer: coarse)').matches;
 
     var el = {};
 
@@ -37,7 +38,6 @@
     function initElements() {
         el.h = $('h'); el.m = $('m'); el.s = $('s');
         el.dn = $('dn'); el.ds = $('ds'); el.st = $('st');
-        el.clockFace = $('clockFace');
         canvas = $('clockCanvas');
         ctx = canvas ? canvas.getContext('2d') : null;
         el.timerList = $('timerList'); el.empty = $('emptyState');
@@ -61,15 +61,19 @@
         el.hdrSub = $('hdrSub'); el.hdrClock = $('hdrClock');
         el.hdrH = $('hdrH'); el.hdrM = $('hdrM');
         el.hdrS = $('hdrS'); el.hdrDate = $('hdrDate');
+        el.clockDisplay = $('clockDisplay');
     }
 
     function init() {
         initElements();
+        var aboutVer = document.getElementById('aboutVer');
+        if (aboutVer && typeof APP_VERSION !== 'undefined') aboutVer.textContent = 'v' + APP_VERSION;
         initCanvas();
         loadSettings();
         loadTimers();
         bindEvents();
         tick(performance.now());
+        animFrame(performance.now());
         render();
         updateClockStats();
         initScroll();
@@ -203,6 +207,11 @@
         setTimeout(function () { if (el.splash) el.splash.style.display = 'none'; }, 1500);
     }
 
+    function animFrame(ts) {
+        drawClock(new Date());
+        requestAnimationFrame(animFrame);
+    }
+
     function loadSettings() {
         try {
             var s = JSON.parse(localStorage.getItem(STORAGE_SETTINGS) || '{}');
@@ -312,12 +321,6 @@
             el.hdrDate.textContent = now.getDate() + ' ' + MONTHS[now.getMonth()].substring(0, 3) + '.';
         }
 
-        if (!colonElements) colonElements = document.querySelectorAll('.tc');
-        var blink = s % 2 === 0;
-        for (var i = 0; i < colonElements.length; i++) {
-            colonElements[i].style.opacity = blink ? '0.4' : '1';
-        }
-
         var dayIndex = relDay(now);
         if (prevDay !== dayIndex) {
             prevDay = dayIndex;
@@ -329,8 +332,6 @@
         }
 
         el.ds.textContent = now.getDate() + ' ' + MONTHS[now.getMonth()] + ' ' + now.getFullYear();
-
-        drawClock(now);
 
         if (prevHour !== h) {
             prevHour = h;
@@ -447,7 +448,7 @@
 
             var card = document.createElement('div');
             card.className = 'tc-card';
-            card.style.setProperty('--card-color', t.color || '#60cdff');
+            card.style.setProperty('--card-color', t.color || DEFAULT_COLOR);
             card.dataset.id = t.id;
             card.setAttribute('role', 'listitem');
             card.setAttribute('draggable', 'true');
@@ -464,7 +465,17 @@
                 '<div class="tc-date"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' + dateStr + '</div>' +
                 '<div class="tc-actions"><button class="ibtn-s ed" data-id="' + t.id + '" title="Редактировать" aria-label="Редактировать"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg></button><button class="ibtn-s dl" data-id="' + t.id + '" title="Удалить" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button></div>';
 
-            frag.appendChild(card);
+            var wrap = document.createElement('div');
+            wrap.className = 'tc-swipe-wrap';
+            wrap.dataset.id = t.id;
+            wrap.innerHTML =
+                '<div class="tc-swipe-actions">' +
+                    '<button class="tc-swipe-btn delete" data-id="' + t.id + '" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Удалить</button>' +
+                    '<button class="tc-swipe-btn edit" data-id="' + t.id + '" aria-label="Редактировать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg>Изменить</button>' +
+                '</div>';
+            wrap.appendChild(card);
+
+            frag.appendChild(wrap);
         }
 
         list.innerHTML = '';
@@ -478,7 +489,7 @@
         el.timerDate.value = '';
         if (el.timerType) el.timerType.value = 'elapsed';
         el.titleCnt.textContent = '0/' + MAX_TITLE;
-        selectedColor = '#60cdff';
+        selectedColor = DEFAULT_COLOR;
         selectColor(selectedColor);
         if (el.saveMoreRow) el.saveMoreRow.style.display = '';
         lastFocus = document.activeElement;
@@ -537,7 +548,7 @@
             el.timerTitle.value = '';
             el.timerDate.value = '';
             el.titleCnt.textContent = '0/' + MAX_TITLE;
-            selectedColor = '#60cdff';
+            selectedColor = DEFAULT_COLOR;
             selectColor(selectedColor);
             setTimeout(function () { el.timerTitle.focus(); }, 100);
         } else {
@@ -557,7 +568,7 @@
         el.timerDate.value = new Date(t.date).toISOString().slice(0, 16);
         if (el.timerType) el.timerType.value = t.type || 'elapsed';
         el.titleCnt.textContent = t.title.length + '/' + MAX_TITLE;
-        selectedColor = t.color || '#60cdff';
+        selectedColor = t.color || DEFAULT_COLOR;
         selectColor(selectedColor);
         if (el.saveMoreRow) el.saveMoreRow.style.display = 'none';
 
@@ -574,20 +585,23 @@
         haptic('medium');
         var idx = timers.findIndex(function (x) { return x.id === id; });
         if (idx === -1) return;
+        var timer = timers[idx];
 
-        var card = el.timerList.querySelector('[data-id="' + id + '"]');
+        var card = el.timerList.querySelector('.tc-card[data-id="' + id + '"]');
         if (card) {
             card.classList.add('removing');
             setTimeout(function () {
-                lastDel = { timer: timers[idx], index: idx };
-                timers.splice(idx, 1);
+                var freshIdx = timers.findIndex(function (x) { return x.id === id; });
+                if (freshIdx === -1) return;
+                lastDel = { timer: timers[freshIdx], index: freshIdx };
+                timers.splice(freshIdx, 1);
                 saveTimers();
                 render();
                 showUndo();
                 updateClockStats();
             }, 300);
         } else {
-            lastDel = { timer: timers[idx], index: idx };
+            lastDel = { timer: timer, index: idx };
             timers.splice(idx, 1);
             saveTimers();
             render();
@@ -914,6 +928,8 @@
             el.titleCnt.textContent = Math.min(l, MAX_TITLE) + '/' + MAX_TITLE;
         };
 
+        if (el.clockDisplay) el.clockDisplay.addEventListener('click', function () { haptic('light'); });
+
         if (el.datePickerBtn) el.datePickerBtn.onclick = function () {
             el.timerDate.showPicker ? el.timerDate.showPicker() : el.timerDate.click();
         };
@@ -1081,6 +1097,7 @@
             });
 
             el.timerList.addEventListener('touchstart', function (e) {
+                if (!isTouch) return;
                 var handle = e.target.closest('.tc-handle');
                 if (!handle) return;
                 var card = handle.closest('.tc-card');
@@ -1098,7 +1115,7 @@
             }, { passive: false });
 
             el.timerList.addEventListener('touchmove', function (e) {
-                if (!touchDragCard || !touchClone) return;
+                if (!isTouch || !touchDragCard || !touchClone) return;
                 e.preventDefault();
                 var touch = e.touches[0];
                 touchClone.style.left = (touch.clientX - touchClone.offsetWidth / 2) + 'px';
@@ -1115,6 +1132,7 @@
             }, { passive: false });
 
             el.timerList.addEventListener('touchend', function () {
+                if (!isTouch) return;
                 clearTimeout(touchLongPress);
                 if (!touchDragCard) return;
                 var overCard = el.timerList.querySelector('.drag-over-top, .drag-over-bottom');
@@ -1130,6 +1148,7 @@
             });
 
             el.timerList.addEventListener('touchcancel', function () {
+                if (!isTouch) return;
                 clearTimeout(touchLongPress);
                 if (touchDragCard) touchDragCard.classList.remove('dragging');
                 if (touchClone && touchClone.parentNode) touchClone.parentNode.removeChild(touchClone);
@@ -1137,7 +1156,12 @@
                 touchClone = null;
                 clearDragIndicators();
             });
+
+            initSwipeActions();
         }
+
+        initPullToRefresh();
+        initModalSwipe();
 
         var settingsBtn = $('settingsBtn');
         if (settingsBtn) settingsBtn.onclick = function () { haptic('light'); openSettings(); };
@@ -1208,5 +1232,203 @@
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
+    }
+
+    function initSwipeActions() {
+        if (!el.timerList || !isTouch) return;
+        var swipeState = null;
+        var openSwipeWrap = null;
+
+        el.timerList.addEventListener('touchstart', function (e) {
+            if (openSwipeWrap) { resetSwipe(openSwipeWrap); openSwipeWrap = null; }
+            var handle = e.target.closest('.tc-handle');
+            if (handle) return;
+            var wrap = e.target.closest('.tc-swipe-wrap');
+            if (!wrap) return;
+            var card = wrap.querySelector('.tc-card');
+            if (!card) return;
+            var touch = e.touches[0];
+            swipeState = { wrap: wrap, card: card, startX: touch.clientX, startY: touch.clientY, moved: false, swiping: false };
+        }, { passive: true });
+
+        el.timerList.addEventListener('touchmove', function (e) {
+            if (!swipeState) return;
+            var touch = e.touches[0];
+            var dx = touch.clientX - swipeState.startX;
+            var dy = touch.clientY - swipeState.startY;
+
+            if (!swipeState.swiping && Math.abs(dy) > Math.abs(dx)) {
+                swipeState = null;
+                return;
+            }
+
+            if (Math.abs(dx) > 8) {
+                swipeState.swiping = true;
+                swipeState.moved = true;
+                e.preventDefault();
+                var card = swipeState.card;
+                card.classList.add('swiping');
+                var clamped = Math.max(-144, Math.min(0, dx));
+                card.style.transform = 'translateX(' + clamped + 'px)';
+            }
+        }, { passive: false });
+
+        el.timerList.addEventListener('touchend', function () {
+            if (!swipeState || !swipeState.moved) { swipeState = null; return; }
+            var card = swipeState.card;
+            var wrap = swipeState.wrap;
+            card.classList.remove('swiping');
+            var transform = card.style.transform;
+            var match = transform.match(/translateX\(([-\d.]+)px\)/);
+            var dx = match ? parseFloat(match[1]) : 0;
+
+            if (dx < -80) {
+                haptic('medium');
+                openSwipeWrap = wrap;
+                card.style.transform = 'translateX(-144px)';
+                card.style.transition = 'transform .25s var(--ease-smooth)';
+                setTimeout(function () { card.style.transition = ''; }, 300);
+            } else {
+                card.style.transform = '';
+            }
+
+            var delBtn = wrap.querySelector('.tc-swipe-btn.delete');
+            var edBtn = wrap.querySelector('.tc-swipe-btn.edit');
+            if (delBtn) delBtn.onclick = function () { haptic('medium'); delTimer(wrap.dataset.id); resetSwipe(wrap); };
+            if (edBtn) edBtn.onclick = function () { haptic('light'); editTimer(wrap.dataset.id); resetSwipe(wrap); };
+            swipeState = null;
+        });
+
+        el.timerList.addEventListener('touchcancel', function () {
+            if (swipeState && swipeState.card) {
+                swipeState.card.classList.remove('swiping');
+                swipeState.card.style.transform = '';
+            }
+            swipeState = null;
+        });
+    }
+
+    function resetSwipe(wrap) {
+        if (!wrap) return;
+        var card = wrap.querySelector('.tc-card');
+        if (!card) return;
+        card.style.transform = '';
+        card.style.transition = 'transform .25s var(--ease-spring)';
+        setTimeout(function () { card.style.transition = ''; }, 300);
+    }
+
+    function initPullToRefresh() {
+        if (!el.scrollPage || !isTouch) return;
+        var indicator = $('pullIndicator');
+        if (!indicator) return;
+        var startY = 0;
+        var pulling = false;
+
+        el.scrollPage.addEventListener('touchstart', function (e) {
+            if (el.scrollPage.scrollTop <= 0) {
+                startY = e.touches[0].clientY;
+                pulling = true;
+            }
+        }, { passive: true });
+
+        el.scrollPage.addEventListener('touchmove', function (e) {
+            if (!pulling) return;
+            var dy = e.touches[0].clientY - startY;
+            if (dy > 10 && el.scrollPage.scrollTop <= 0) {
+                var progress = Math.min(1, dy / 80);
+                indicator.style.height = Math.min(56, dy * 0.6) + 'px';
+                indicator.style.opacity = progress;
+                indicator.classList.add('active');
+                var svg = indicator.querySelector('svg');
+                if (svg) svg.style.transform = 'rotate(' + (progress * 180) + 'deg)';
+            }
+        }, { passive: true });
+
+        el.scrollPage.addEventListener('touchend', function () {
+            if (!pulling) return;
+            pulling = false;
+            var h = parseFloat(indicator.style.height) || 0;
+            if (h >= 40) {
+                haptic('medium');
+                indicator.classList.add('refreshing');
+                indicator.style.height = '56px';
+                indicator.style.opacity = '1';
+                var svg = indicator.querySelector('svg');
+                if (svg) svg.style.transform = '';
+                setTimeout(function () {
+                    render();
+                    updateClockStats();
+                    indicator.classList.remove('active', 'refreshing');
+                    indicator.style.height = '';
+                    indicator.style.opacity = '';
+                    notify('Обновлено');
+                }, 600);
+            } else {
+                indicator.classList.remove('active');
+                indicator.style.height = '';
+                indicator.style.opacity = '';
+            }
+        });
+
+        el.scrollPage.addEventListener('touchcancel', function () {
+            pulling = false;
+            indicator.classList.remove('active');
+            indicator.style.height = '';
+            indicator.style.opacity = '';
+        });
+    }
+
+    function initModalSwipe() {
+        if (!isTouch) return;
+        document.querySelectorAll('.modal').forEach(function (modal) {
+            var mc = modal.querySelector('.mc');
+            var handle = modal.querySelector('.mc-handle');
+            if (!mc || !handle) return;
+            var startY = 0;
+            var swiping = false;
+
+            handle.addEventListener('touchstart', function (e) {
+                startY = e.touches[0].clientY;
+                swiping = true;
+                mc.classList.add('swiping');
+            }, { passive: true });
+
+            handle.addEventListener('touchmove', function (e) {
+                if (!swiping) return;
+                var dy = e.touches[0].clientY - startY;
+                if (dy > 0) {
+                    e.preventDefault();
+                    mc.style.transform = 'translateY(' + dy + 'px)';
+                    modal.style.opacity = Math.max(0, 1 - dy / 300);
+                }
+            }, { passive: false });
+
+            handle.addEventListener('touchend', function () {
+                if (!swiping) return;
+                swiping = false;
+                mc.classList.remove('swiping');
+                var transform = mc.style.transform;
+                var match = transform.match(/translateY\(([\d.]+)px\)/);
+                var dy = match ? parseFloat(match[1]) : 0;
+
+                if (dy > 120) {
+                    haptic('medium');
+                    modal.classList.remove('show');
+                    releaseFocus();
+                    if (lastFocus) lastFocus.focus();
+                    if (modal === el.sModal) closeSettings();
+                    history.back();
+                }
+                mc.style.transform = '';
+                modal.style.opacity = '';
+            });
+
+            handle.addEventListener('touchcancel', function () {
+                swiping = false;
+                mc.classList.remove('swiping');
+                mc.style.transform = '';
+                modal.style.opacity = '';
+            });
+        });
     }
 })();

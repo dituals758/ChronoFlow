@@ -1,25 +1,38 @@
-const CACHE = 'cf-v2.1.0';
-const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png'];
+importScripts('./version.js');
 
-self.addEventListener('install', e => {
-    e.waitUntil(caches.open(CACHE).then(c => Promise.all(ASSETS.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
+var CACHE = 'cf-v' + APP_VERSION;
+
+var ASSETS = ['./', './index.html', './styles.css', './app.js', './version.js', './manifest.json', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png'];
+
+self.addEventListener('install', function (e) {
+    e.waitUntil(
+        caches.open(CACHE).then(function (c) {
+            return Promise.all(ASSETS.map(function (u) { return c.add(u).catch(function () {}); }));
+        }).then(function () { return self.skipWaiting(); })
+    );
 });
 
-self.addEventListener('activate', e => {
-    e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => x !== CACHE).map(x => caches.delete(x)))).then(() => self.clients.claim()));
+self.addEventListener('activate', function (e) {
+    e.waitUntil(
+        caches.keys().then(function (k) {
+            return Promise.all(
+                k.filter(function (x) { return x !== CACHE; }).map(function (x) { return caches.delete(x); })
+            );
+        }).then(function () { return self.clients.claim(); })
+    );
 });
 
-self.addEventListener('fetch', e => {
+self.addEventListener('fetch', function (e) {
     if (e.request.method !== 'GET') return;
     e.respondWith(
-        caches.match(e.request).then(cached => {
-            var fetched = fetch(e.request).then(r => {
+        caches.match(e.request).then(function (cached) {
+            var fetched = fetch(e.request).then(function (r) {
                 if (r.ok) {
                     var c = r.clone();
-                    caches.open(CACHE).then(cache => cache.put(e.request, c));
+                    caches.open(CACHE).then(function (cache) { cache.put(e.request, c); });
                 }
                 return r;
-            }).catch(() => cached);
+            }).catch(function () { return cached; });
             return cached || fetched;
         })
     );
