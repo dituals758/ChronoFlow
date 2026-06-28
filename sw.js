@@ -1,4 +1,4 @@
-const CACHE = 'cf-v2.0.2';
+const CACHE = 'cf-v2.1.0';
 const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

@@ -9,7 +9,6 @@
     var STORAGE_TIMERS = 'timeflow_timers';
     var STORAGE_SETTINGS = 'timeflow_settings';
     var MAX_TITLE = 50;
-    var CIRC = 2 * Math.PI * 46;
 
     var timers = [];
     var editId = null;
