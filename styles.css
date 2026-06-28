@@ -69,6 +69,7 @@
 }
 .lt .btn-p, .lt .ibtn-s.pri, .lt .undo-btn { color: #fff; }
 .lt .notif { color: var(--t1); }
+.lt header { background: rgba(242,242,248,.72); backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%); }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 * { -webkit-tap-highlight-color: transparent; }
@@ -111,6 +112,8 @@ body {
 .lt .accent, .lt .accent svg { fill: url(#logoGradLight); stroke: url(#logoGradLight); }
 .lt .accent-stroke, .lt .accent-stroke svg { fill: none; stroke: url(#logoGradLight); }
 .lt .accent-text { background: linear-gradient(135deg, #2878e8, #9b6dff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.lt .hdr-clock { background: linear-gradient(135deg, #2878e8, #9b6dff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.lt .hdr-colon { color: #2878e8; }
 .lt .hdr-left h1 { color: transparent; }
 
 .splash-name { font: 700 36px/44px var(--fn); letter-spacing: -.02em; margin-bottom: 4px; }
@@ -119,9 +122,10 @@ body {
 .splash-bar-fill { width: 0; height: 100%; background: linear-gradient(90deg, var(--bl), var(--pu)); border-radius: var(--rp); animation: splashLoad 1.4s var(--ease-out) forwards; }
 
 header {
+    position: sticky; top: 0;
     flex-shrink: 0;
     padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 10px;
-    background: var(--ac); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    background: rgba(10,10,18,.72); backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
     border-bottom: 1px solid var(--ab); z-index: 100;
     transition: background .5s ease, border-color .5s ease;
 }
@@ -137,13 +141,20 @@ header {
 .hdr-clock {
     display: flex; align-items: baseline; gap: 1px;
     font: 500 14px/1 var(--fd); font-variant-numeric: tabular-nums;
-    color: var(--bl); opacity: 0; transform: translateY(-6px);
+    background: linear-gradient(135deg, var(--bl), var(--pu));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    opacity: 0; transform: translateY(-6px);
     transition: opacity .35s cubic-bezier(.4,0,.2,1), transform .35s cubic-bezier(.4,0,.2,1);
     pointer-events: none; white-space: nowrap;
 }
+.hdr-clock span { -webkit-text-fill-color: inherit; color: inherit; }
+.hdr-colon {
+    -webkit-text-fill-color: initial; color: var(--bl);
+    animation: blink 1s step-end infinite;
+}
 .hdr-clock.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .hdr-date { font: 400 10px/1 var(--fn); color: var(--t3); margin-left: 6px; }
-.hdr-colon { animation: blink 1s step-end infinite; }
 
 main { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .scroll-page {
@@ -228,7 +239,7 @@ main { flex: 1; min-height: 0; overflow: hidden; position: relative; }
     will-change: transform, opacity;
     position: relative; z-index: 1;
     transform-origin: center top;
-    overflow: hidden;
+    transition: transform .1s ease-out, opacity .1s ease-out;
 }
 
 .clock-box {
@@ -289,17 +300,6 @@ main { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .cs-val { font: 700 22px/26px var(--fd); font-variant-numeric: tabular-nums; color: var(--t1); transition: color .3s; }
 .cs-label { font: 400 10px/14px var(--fn); color: var(--t3); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
 .cs-divider { width: 1px; height: 28px; background: var(--st); flex-shrink: 0; }
-
-.cs-next {
-    display: flex; align-items: center; gap: 6px;
-    padding: 8px 12px; background: var(--at); border: 1px solid var(--st);
-    border-radius: var(--rx); width: 100%;
-    font: 400 12px/16px var(--fn); color: var(--t2);
-    transition: background .5s ease, border-color .5s ease, color .5s ease;
-}
-.cs-next svg { flex-shrink: 0; color: var(--bl); opacity: .7; }
-.cs-next .cs-highlight { color: var(--bl); font-weight: 600; }
-.cs-next .cs-time { color: var(--bl); font-weight: 600; font-family: var(--fd); font-variant-numeric: tabular-nums; }
 
 #timersSection { padding: 16px; max-width: 100%; margin: 0 auto; }
 
@@ -438,15 +438,14 @@ main { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .notif::before { content: ''; width: 6px; height: 6px; border-radius: var(--rp); background: var(--ok); flex-shrink: 0; }
 .notif.err::before { background: var(--er); }
 
-.offline-badge {
-    position: fixed; top: calc(env(safe-area-inset-top, 0) + 70px);
-    left: 50%; transform: translateX(-50%) translateY(-20px);
-    padding: 4px 14px; border-radius: var(--rp);
-    background: var(--er); color: #fff; font: 600 11px/14px var(--fn);
-    z-index: 2000; opacity: 0;
-    transition: all var(--dur-normal) var(--ease-spring); pointer-events: none;
+.offline-dot {
+    display: none;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--er); flex-shrink: 0;
+    animation: offlinePulse 1.5s ease-in-out infinite;
 }
-.offline-badge.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.offline-dot.show { display: inline-block; }
+@keyframes offlinePulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 
 .modal {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -527,6 +526,42 @@ main { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .cp-custom:hover { border-color: var(--bl); color: var(--bl); border-style: solid; }
 .cp-custom.active { border-color: var(--t1); border-style: solid; box-shadow: 0 0 0 3px var(--c), 0 0 16px var(--c); }
 
+.hsl-popup {
+    display: none;
+    margin-top: 12px;
+    padding: 16px;
+    background: var(--sf2);
+    border: 1px solid var(--abs);
+    border-radius: var(--rx);
+}
+.hsl-popup.show { display: block; }
+.hsl-preview {
+    width: 100%; height: 40px;
+    border-radius: 8px; margin-bottom: 12px;
+    border: 1px solid var(--st);
+}
+.hsl-sliders { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.hsl-row { display: flex; align-items: center; gap: 8px; }
+.hsl-row label { font: 600 11px/14px var(--fn); color: var(--t2); width: 14px; flex-shrink: 0; }
+.hsl-row span { font: 400 12px/1 var(--fd); color: var(--t3); width: 32px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.hsl-range {
+    flex: 1; height: 6px; -webkit-appearance: none; appearance: none;
+    background: var(--sf3); border-radius: 3px; outline: none;
+}
+.hsl-range::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--t1); border: 2px solid var(--bl); cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+.hsl-range::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--t1); border: 2px solid var(--bl); cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+.hsl-h { background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+.hsl-s { background: linear-gradient(to right, #888, var(--bl)); }
+.hsl-l { background: linear-gradient(to right, #000, #888, #fff); }
+
 .sg { padding: 16px 20px; border-bottom: 1px solid var(--st); }
 .sg:last-child { border-bottom: none; }
 .sg h3 { font: 600 11px/14px var(--fn); color: var(--t2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
@@ -566,7 +601,7 @@ input:focus-visible + .sl { outline: 2px solid var(--bl); outline-offset: 2px; }
 .about-features { list-style: none; padding: 0; margin: 8px 0 0; font: 400 12px/20px var(--fn); color: var(--t2); width: 100%; }
 .about-features li { padding: 3px 0 3px 18px; position: relative; }
 .about-features li::before { content: ''; position: absolute; left: 0; top: 10px; width: 6px; height: 6px; border-radius: 50%; background: var(--bl); opacity: .5; }
-.about-links { display: flex; flex-direction: column; gap: 4px; margin: 12px 0; padding: 12px 0; border-top: 1px solid var(--st); border-bottom: 1px solid var(--st); width: 100%; }
+.about-links { display: flex; flex-direction: column; gap: 4px; margin: 12px 0; padding: 12px 0; border-top: 1px solid var(--st); width: 100%; }
 .about-links a { font: 400 14px/20px var(--fn); color: var(--bl); text-decoration: none; padding: 4px 0; transition: opacity var(--dur-fast); border-radius: 4px; }
 .about-links a:hover { opacity: .7; }
 .about-credits { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--st); width: 100%; }
@@ -606,7 +641,7 @@ input:focus-visible + .sl { outline: 2px solid var(--bl); outline-offset: 2px; }
 
 .date-input-wrap { position: relative; display: flex; align-items: center; }
 .date-input-wrap input[type="datetime-local"] {
-    width: 100%; min-height: 44px; padding: 0 44px 0 14px;
+    width: 100%; min-height: 44px; padding: 0 90px 0 14px;
     border-radius: var(--rx); border: 1px solid var(--abs);
     background: var(--sf2); color: var(--t1);
     font: 400 14px/20px var(--fn); transition: all var(--dur-fast);
@@ -615,7 +650,7 @@ input:focus-visible + .sl { outline: 2px solid var(--bl); outline-offset: 2px; }
 .date-input-wrap input:focus { outline: none; border-color: var(--bl); box-shadow: 0 0 0 3px var(--blb); }
 .date-input-wrap input::-webkit-calendar-picker-indicator { opacity: 0; position: absolute; right: 0; top: 0; width: 44px; height: 100%; cursor: pointer; }
 .date-picker-btn {
-    position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+    position: absolute; top: 50%; transform: translateY(-50%);
     width: 40px; height: 40px; border: none;
     background: var(--blb); color: var(--bl); border-radius: var(--rx);
     display: flex; align-items: center; justify-content: center;
@@ -623,6 +658,8 @@ input:focus-visible + .sl { outline: 2px solid var(--bl); outline-offset: 2px; }
                                 color var(--dur-fast) var(--ease-smooth),
                                 transform var(--dur-fast) var(--ease-spring); z-index: 2;
 }
+.date-picker-btn.reset-time-btn { right: 46px; }
+.date-picker-btn:not(.reset-time-btn) { right: 4px; }
 .date-picker-btn:hover { background: var(--bl); color: #fff; }
 .date-picker-btn:active { transform: translateY(-50%) scale(.88); }
 

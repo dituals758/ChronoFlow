@@ -1,4 +1,4 @@
-const CACHE = 'cf-v2.0.1';
+const CACHE = 'cf-v2.0.2';
 const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -12,12 +12,15 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
     if (e.request.method !== 'GET') return;
     e.respondWith(
-        fetch(e.request).then(r => {
-            if (r.ok) {
-                var c = r.clone();
-                caches.open(CACHE).then(cache => cache.put(e.request, c));
-            }
-            return r;
-        }).catch(() => caches.match(e.request))
+        caches.match(e.request).then(cached => {
+            var fetched = fetch(e.request).then(r => {
+                if (r.ok) {
+                    var c = r.clone();
+                    caches.open(CACHE).then(cache => cache.put(e.request, c));
+                }
+                return r;
+            }).catch(() => cached);
+            return cached || fetched;
+        })
     );
 });

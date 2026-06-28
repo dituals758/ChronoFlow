@@ -53,9 +53,10 @@
         el.addBtn = $('addBtn'); el.addFirstBtn = $('addFirstBtn');
         el.closeModal = $('closeModal'); el.cancelBtn = $('cancelBtn');
         el.saveMoreBtn = $('saveMoreBtn'); el.saveMoreRow = $('saveMoreRow');
+        el.resetTimeBtn = $('resetTimeBtn');
         el.themeSel = $('themeSel'); el.animToggle = $('animToggle');
         el.installBtn = $('installBtn');
-        el.timeAnnounce = $('timeAnnounce'); el.offlineBadge = $('offlineBadge');
+        el.timeAnnounce = $('timeAnnounce'); el.offlineDot = $('offlineDot');
         el.splash = $('splash'); el.scrollPage = $('scrollPage');
         el.confirmModal = $('confirmModal'); el.datePickerBtn = $('datePickerBtn');
         el.hdrSub = $('hdrSub'); el.hdrClock = $('hdrClock');
@@ -490,6 +491,8 @@
 
     function closeModal() {
         el.timerModal.classList.remove('show');
+        var hslPopup = document.getElementById('hslPopup');
+        if (hslPopup) hslPopup.classList.remove('show');
         releaseFocus();
         if (lastFocus) lastFocus.focus();
         history.back();
@@ -688,6 +691,34 @@
         if (el.sModal && !el.sModal.classList.contains('show')) closeSettings();
     }
 
+    function hslToHex(h, s, l) {
+        s /= 100; l /= 100;
+        var a = s * Math.min(l, 1 - l);
+        function f(n) {
+            var k = (n + h / 30) % 12;
+            var color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+            return Math.round(255 * color).toString(16).padStart(2, '0');
+        }
+        return '#' + f(0) + f(8) + f(4);
+    }
+
+    function hexToHsl(hex) {
+        var r = parseInt(hex.slice(1, 3), 16) / 255;
+        var g = parseInt(hex.slice(3, 5), 16) / 255;
+        var b = parseInt(hex.slice(5, 7), 16) / 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        if (max === min) { h = s = 0; }
+        else {
+            var d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+            else if (max === g) h = ((b - r) / d + 2) * 60;
+            else h = ((r - g) / d + 4) * 60;
+        }
+        return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+
     function selectColor(c) {
         selectedColor = c;
         var all = document.querySelectorAll('.cp');
@@ -698,13 +729,11 @@
             if (isMatch) matched = true;
         }
         var customBtn = document.getElementById('customColorBtn');
-        var customInput = document.getElementById('customColorInput');
         if (!matched && customBtn) {
             for (var j = 0; j < all.length; j++) all[j].classList.remove('active');
             customBtn.classList.add('active');
             customBtn.style.setProperty('--c', c);
             customBtn.style.background = c;
-            if (customInput) customInput.value = c;
         } else if (customBtn) {
             customBtn.classList.remove('active');
             customBtn.style.background = '';
@@ -727,21 +756,12 @@
 
     function updateClockStats() {
         var elapsed = 0, countdown = 0;
-        var nextTimer = null, nextDiff = Infinity;
-        var longestElapsed = null, longestDiff = 0;
         var now = Date.now();
 
         for (var i = 0; i < timers.length; i++) {
             var t = timers[i];
-            if (t.type === 'elapsed') {
-                elapsed++;
-                var eDiff = now - t.date;
-                if (eDiff > longestDiff) { longestDiff = eDiff; longestElapsed = t; }
-            } else {
-                countdown++;
-                var cDiff = t.date - now;
-                if (cDiff > 0 && cDiff < nextDiff) { nextDiff = cDiff; nextTimer = t; }
-            }
+            if (t.type === 'elapsed') elapsed++;
+            else countdown++;
         }
 
         var total = timers.length;
@@ -751,23 +771,6 @@
         if (totalEl) totalEl.querySelector('.cs-val').textContent = total;
         if (elapsedEl) elapsedEl.querySelector('.cs-val').textContent = elapsed;
         if (countdownEl) countdownEl.querySelector('.cs-val').textContent = countdown;
-
-        var nextText = $('csNextText');
-        if (nextText) {
-            if (total === 0) {
-                nextText.textContent = 'Создайте первый счётчик';
-            } else if (nextTimer) {
-                var days = Math.floor(nextDiff / 86400000);
-                var hours = Math.floor((nextDiff % 86400000) / 3600000);
-                var timeStr = days > 0 ? days + ' дн. ' + hours + ' ч.' : hours + ' ч.';
-                nextText.innerHTML = '<span class="cs-highlight">' + esc(nextTimer.title) + '</span> — через <span class="cs-time">' + timeStr + '</span>';
-            } else if (longestElapsed) {
-                var eDays = Math.floor(longestDiff / 86400000);
-                var eMonths = Math.floor(eDays / 30.44);
-                var timeStr2 = eMonths > 0 ? eMonths + ' мес.' : eDays + ' дн.';
-                nextText.innerHTML = '<span class="cs-highlight">' + esc(longestElapsed.title) + '</span> — уже <span class="cs-time">' + timeStr2 + '</span>';
-            }
-        }
     }
 
     var _scrollRaf = null;
@@ -783,6 +786,24 @@
             _cachedWrapH = wrap ? wrap.scrollHeight : 300;
             _cachedStatsH = stats ? stats.scrollHeight : 0;
         });
+        var resizeTimer = null;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+                var wrap = el.clockSection ? el.clockSection.querySelector('.clock-wrap') : null;
+                var stats = el.clockSection ? el.clockSection.querySelector('.clock-stats') : null;
+                _cachedWrapH = wrap ? wrap.scrollHeight : 300;
+                _cachedStatsH = stats ? stats.scrollHeight : 0;
+                if (wrap) {
+                    wrap.style.cssText = '';
+                    wrap.classList.remove('collapsed');
+                }
+                if (stats) {
+                    stats.style.cssText = '';
+                }
+                handleScroll();
+            }, 150);
+        }, { passive: true });
     }
 
     function handleScroll() {
@@ -811,14 +832,18 @@
                 var s = 1 - ease * 0.6;
                 var ty = ease * -20;
                 var o = Math.max(0, 1 - ease * 1.5);
-                wrap.style.cssText = 'transform:scale(' + s + ') translateY(' + ty + 'px);opacity:' + o + ';overflow:' + (ease > 0.05 ? 'hidden' : 'visible');
+                wrap.style.transform = 'scale(' + s + ') translateY(' + ty + 'px)';
+                wrap.style.opacity = o;
+                wrap.style.overflow = ease > 0.05 ? 'hidden' : 'visible';
             }
             if (stats) {
                 var sE = Math.max(0, Math.min(1, (scrollTop - trigger * 0.5) / (full * 0.5)));
                 var ss = 1 - sE * 0.15;
                 var sty = sE * -12;
                 var so = Math.max(0, 1 - sE * 1.4);
-                stats.style.cssText = 'transform:scale(' + ss + ') translateY(' + sty + 'px);opacity:' + so + ';overflow:' + (sE > 0.05 ? 'hidden' : 'visible');
+                stats.style.transform = 'scale(' + ss + ') translateY(' + sty + 'px)';
+                stats.style.opacity = so;
+                stats.style.overflow = sE > 0.05 ? 'hidden' : 'visible';
             }
 
             var sectionHdr = document.querySelector('.section-hdr');
@@ -894,30 +919,67 @@
             el.timerDate.showPicker ? el.timerDate.showPicker() : el.timerDate.click();
         };
 
+        if (el.resetTimeBtn) el.resetTimeBtn.onclick = function () {
+            el.timerDate.value = new Date().toISOString().slice(0, 16);
+            haptic('light');
+        };
+
         var colorPick = document.getElementById('colorPick');
         var customColorBtn = document.getElementById('customColorBtn');
-        var customColorInput = document.getElementById('customColorInput');
+        var hslPopup = document.getElementById('hslPopup');
+        var hslH = document.getElementById('hslH');
+        var hslS = document.getElementById('hslS');
+        var hslL = document.getElementById('hslL');
+        var hslHVal = document.getElementById('hslHVal');
+        var hslSVal = document.getElementById('hslSVal');
+        var hslLVal = document.getElementById('hslLVal');
+        var hslPreview = document.getElementById('hslPreview');
+        var hslApply = document.getElementById('hslApply');
+
+        function updateHslPopup() {
+            var h = parseInt(hslH.value), s = parseInt(hslS.value), l = parseInt(hslL.value);
+            hslHVal.textContent = h;
+            hslSVal.textContent = s;
+            hslLVal.textContent = l;
+            var hex = hslToHex(h, s, l);
+            if (hslPreview) hslPreview.style.background = hex;
+            hslH.style.setProperty('--range-color', 'hsl(' + h + ',' + s + '%,' + l + '%)');
+            hslS.style.setProperty('--range-color', 'hsl(' + h + ',' + s + '%,' + l + '%)');
+            hslL.style.setProperty('--range-color', 'hsl(' + h + ',' + s + '%,' + l + '%)');
+        }
+
+        function openHslPopup(color) {
+            var hsl = hexToHsl(color);
+            hslH.value = hsl.h;
+            hslS.value = hsl.s;
+            hslL.value = hsl.l;
+            updateHslPopup();
+            hslPopup.classList.add('show');
+        }
+
+        if (hslH) hslH.oninput = updateHslPopup;
+        if (hslS) hslS.oninput = updateHslPopup;
+        if (hslL) hslL.oninput = updateHslPopup;
+
+        if (hslApply) hslApply.onclick = function () {
+            var hex = hslToHex(parseInt(hslH.value), parseInt(hslS.value), parseInt(hslL.value));
+            selectedColor = hex;
+            selectColor(hex);
+            hslPopup.classList.remove('show');
+            haptic('light');
+        };
+
         if (colorPick) colorPick.onclick = function (e) {
             var cp = e.target.closest('.cp');
             if (!cp) return;
             if (cp === customColorBtn) {
-                customColorInput.click();
+                openHslPopup(selectedColor);
                 return;
             }
             selectedColor = cp.dataset.c;
             var all = colorPick.querySelectorAll('.cp');
             for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
             cp.classList.add('active');
-        };
-        if (customColorInput) customColorInput.oninput = function () {
-            selectedColor = customColorInput.value;
-            if (customColorBtn) {
-                customColorBtn.style.setProperty('--c', selectedColor);
-                customColorBtn.style.background = selectedColor;
-            }
-            var all = colorPick.querySelectorAll('.cp');
-            for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
-            if (customColorBtn) customColorBtn.classList.add('active');
         };
 
         var filterBtn = $('filterBtn');
@@ -1116,10 +1178,14 @@
         };
 
         window.onoffline = function () {
-            el.offlineBadge.classList.add('show');
+            if (el.offlineDot) el.offlineDot.classList.add('show');
             notify('Нет соединения', 'error');
         };
-        if (!navigator.onLine) el.offlineBadge.classList.add('show');
+        window.ononline = function () {
+            if (el.offlineDot) el.offlineDot.classList.remove('show');
+            notify('Соединение восстановлено');
+        };
+        if (!navigator.onLine && el.offlineDot) el.offlineDot.classList.add('show');
     }
 
     window.addEventListener('beforeinstallprompt', function (e) {
