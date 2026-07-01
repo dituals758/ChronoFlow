@@ -4,8 +4,25 @@
     var COLORS = ['#5ab0e0', '#7eacff', '#b89cff', '#ff7eb3', '#ff8c00', '#5cd66e', '#ff6b6b'];
     var DEFAULT_COLOR = '#60cdff';
     var DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
-    var DAYS_SHORT = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
     var MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
+    var ICONS = {
+        settings: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+        install: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 17V3M7 12l5 5 5-5M4 18h16"/></svg>',
+        plus: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>',
+        search: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
+        filter: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M7 12h10M9 18h6"/></svg>',
+        close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+        edit: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg>',
+        trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>',
+        clock: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+        calendarPicker: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>',
+        exportDown: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>',
+        importUp: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>',
+        image: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
+        colorPlus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>',
+        searchClear: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>'
+    };
 
     var STORAGE_TIMERS = 'timeflow_timers';
     var STORAGE_SETTINGS = 'timeflow_settings';
@@ -14,6 +31,10 @@
     var timers = [];
     var editId = null;
     var filter = 'all';
+    var sortBy = 'created';
+    var categoryFilter = 'all';
+    var searchQuery = '';
+    var notifiedTimers = {};
     var prevDay = -1;
     var prevHour = -1;
     var lastTick = 0;
@@ -27,8 +48,8 @@
     var touchLongPress = null;
     var touchClone = null;
 
-    var canvas, ctx, dpr;
-    var canvasW = 0, canvasH = 0;
+    var svgDayDots;
+    var svgDayEls = [];
     var isTouch = window.matchMedia('(pointer: coarse)').matches;
 
     var el = {};
@@ -36,10 +57,7 @@
     function $(id) { return document.getElementById(id); }
 
     function initElements() {
-        el.h = $('h'); el.m = $('m'); el.s = $('s');
-        el.dn = $('dn'); el.ds = $('ds'); el.st = $('st');
-        canvas = $('clockCanvas');
-        ctx = canvas ? canvas.getContext('2d') : null;
+        svgDayDots = $('dayDots');
         el.timerList = $('timerList'); el.empty = $('emptyState');
         el.timerModal = $('timerModal'); el.timerForm = $('timerForm');
         el.timerTitle = $('timerTitle'); el.timerDate = $('timerDate');
@@ -49,7 +67,7 @@
         el.importFile = $('importFile');
         el.clockSection = $('clockSection');
         el.timersSection = $('timersSection');
-        el.addBtn = $('addBtn'); el.addFirstBtn = $('addFirstBtn');
+        el.addFirstBtn = $('addFirstBtn');
         el.closeModal = $('closeModal'); el.cancelBtn = $('cancelBtn');
         el.saveMoreBtn = $('saveMoreBtn'); el.saveMoreRow = $('saveMoreRow');
         el.resetTimeBtn = $('resetTimeBtn');
@@ -61,21 +79,70 @@
         el.hdrSub = $('hdrSub'); el.hdrClock = $('hdrClock');
         el.hdrH = $('hdrH'); el.hdrM = $('hdrM');
         el.hdrS = $('hdrS'); el.hdrDate = $('hdrDate');
-        el.clockDisplay = $('clockDisplay');
+        el.searchInput = $('searchInput');
+        el.searchClear = $('searchClear');
+        el.searchBar = $('searchBar');
+        el.searchBtn = $('searchBtn');
+        el.addTimerBtn = $('addTimerBtn');
+        el.timerCategory = $('timerCategory');
+        el.timerRecurring = $('timerRecurring');
+        el.timerReminder = $('timerReminder');
+        el.catSelect = $('catSelect');
+        el.sortSelect = $('sortSelect');
+    }
+
+    function injectIcons() {
+        var map = {
+            settingsBtn: 'settings',
+            installBtn: 'install',
+            addTimerBtn: 'plus',
+            searchBtn: 'search',
+            filterBtn: 'filter',
+            closeModal: 'close',
+            cancelBtn: 'close',
+            closeFModal: 'close',
+            closeSModal: 'close',
+            datePickerBtn: 'calendarPicker',
+            resetTimeBtn: 'clock',
+            searchClear: 'searchClear',
+            customColorBtn: 'colorPlus',
+            exportImgBtn: 'image',
+            addFirstBtn: 'plus'
+        };
+        for (var id in map) {
+            var btn = $(id);
+            if (btn && !btn.innerHTML.trim()) btn.innerHTML = ICONS[map[id]];
+        }
+        var addBtn = $('addTimerBtn');
+        if (addBtn && !addBtn.textContent.includes('Добавить')) addBtn.innerHTML = ICONS.plus + ' <span>Добавить</span>';
+        var pullIndicator = $('pullIndicator');
+        if (pullIndicator) pullIndicator.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M12 17V3M7 12l5 5 5-5"/></svg>';
+        var sBtns = {
+            exportBtn: 'exportDown',
+            importBtn: 'importUp',
+            clearBtn: 'trash'
+        };
+        for (var id2 in sBtns) {
+            var btn2 = $(id2);
+            if (btn2) {
+                var txt = btn2.textContent.trim();
+                btn2.innerHTML = ICONS[sBtns[id2]] + ' ' + esc(txt);
+            }
+        }
     }
 
     function init() {
         initElements();
+        injectIcons();
         var aboutVer = document.getElementById('aboutVer');
         if (aboutVer && typeof APP_VERSION !== 'undefined') aboutVer.textContent = 'v' + APP_VERSION;
-        initCanvas();
+        initClockSvg();
         loadSettings();
         loadTimers();
         bindEvents();
         tick(performance.now());
-        animFrame(performance.now());
+        requestAnimationFrame(function tickSvg() { updateClockSvg(); requestAnimationFrame(tickSvg); });
         render();
-        updateClockStats();
         initScroll();
         initKeyboard();
         initSW();
@@ -84,132 +151,157 @@
         if (sh && timers.length === 0) sh.classList.add('shifted');
     }
 
-    function initCanvas() {
-        if (!canvas || !ctx) return;
-        dpr = window.devicePixelRatio || 1;
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-    }
+    var SVG_NS = 'http://www.w3.org/2000/svg';
+    var SVG_CX = 100;
+    var SVG_CY = 100;
+    var svgDayRingFill;
+    var svgRingEl;
+    var svgRingGradStop1, svgRingGradStop2;
+    var svgDayGradStop1, svgDayGradStop2;
+    var SEC_RING_R = 88;
+    var DAY_RING_R = 76;
+    var SEC_RING_CIRCUMFERENCE = 2 * Math.PI * SEC_RING_R;
+    var DAY_RING_CIRCUMFERENCE = 2 * Math.PI * DAY_RING_R;
+    var DAYS_SHORT_RU = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+    var MONTHS_SHORT = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
 
-    function resizeCanvas() {
-        if (!canvas || !ctx) return;
-        var box = canvas.parentElement;
-        if (!box) return;
-        var rect = box.getBoundingClientRect();
-        canvasW = rect.width;
-        canvasH = rect.height;
-        canvas.width = canvasW * dpr;
-        canvas.height = canvasH * dpr;
-        canvas.style.width = canvasW + 'px';
-        canvas.style.height = canvasH + 'px';
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    function getCSSVar(name) {
-        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    }
-
-    function hexToRgba(hex, alpha) {
+    function lightenHex(hex, pct) {
         var r = parseInt(hex.slice(1, 3), 16);
         var g = parseInt(hex.slice(3, 5), 16);
         var b = parseInt(hex.slice(5, 7), 16);
-        return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+        r = Math.min(255, Math.round(r + (255 - r) * pct));
+        g = Math.min(255, Math.round(g + (255 - g) * pct));
+        b = Math.min(255, Math.round(b + (255 - b) * pct));
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
     }
 
-    function drawClock(now) {
-        if (!ctx || !canvasW || !canvasH) return;
+    function initClockSvg() {
+        svgRingEl = document.getElementById('ringProgress');
+        svgDayRingFill = document.getElementById('dayRingFill');
+        svgRingGradStop1 = document.querySelector('#ringGrad stop:first-child');
+        svgRingGradStop2 = document.querySelector('#ringGrad stop:last-child');
+        svgDayGradStop1 = document.querySelector('#dayRingGrad stop:first-child');
+        svgDayGradStop2 = document.querySelector('#dayRingGrad stop:last-child');
 
-        var w = canvasW;
-        var h = canvasH;
-        var cx = w / 2;
-        var cy = h / 2;
-        var outerR = Math.min(cx, cy) * 0.96;
-        var innerR = outerR * 0.74;
-        var ringR = outerR * 0.88;
-        var ringW = outerR * 0.045;
-        var dayIndex = relDay(now);
-        var dayColor = COLORS[dayIndex];
-        var s = now.getSeconds();
-        var ms = now.getMilliseconds();
-        var isLight = document.body.classList.contains('lt');
-        var labelInactive = isLight ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.22)';
+        if (svgRingEl) {
+            svgRingEl.style.strokeDasharray = SEC_RING_CIRCUMFERENCE;
+            svgRingEl.style.strokeDashoffset = SEC_RING_CIRCUMFERENCE;
+        }
+        if (svgDayRingFill) {
+            svgDayRingFill.style.strokeDasharray = DAY_RING_CIRCUMFERENCE;
+            svgDayRingFill.style.strokeDashoffset = DAY_RING_CIRCUMFERENCE;
+        }
 
-        ctx.clearRect(0, 0, w, h);
-
+        // Day dots
+        svgDayDots.innerHTML = '';
+        svgDayEls = [];
+        var dotR = 65;
         for (var i = 0; i < 7; i++) {
-            var startAngle = (i * 2 * Math.PI / 7) - Math.PI / 2;
-            var endAngle = startAngle + (2 * Math.PI / 7);
-            var segColor = COLORS[i];
-            var isActive = i === dayIndex;
-            var segAlpha = isActive ? 0.14 : 0.04;
+            var angle = (i * 2 * Math.PI / 7) - Math.PI / 2;
+            var x = SVG_CX + dotR * Math.cos(angle);
+            var y = SVG_CY + dotR * Math.sin(angle);
+            var dot = document.createElementNS(SVG_NS, 'circle');
+            dot.setAttribute('cx', x);
+            dot.setAttribute('cy', y);
+            dot.setAttribute('r', '3');
+            dot.setAttribute('fill', COLORS[i]);
+            dot.setAttribute('opacity', '0.15');
+            svgDayDots.appendChild(dot);
+            svgDayEls.push(dot);
+        }
 
-            ctx.beginPath();
-            ctx.arc(cx, cy, outerR, startAngle, endAngle);
-            ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
-            ctx.closePath();
-            ctx.fillStyle = hexToRgba(segColor, segAlpha);
-            ctx.fill();
-
-            if (isActive) {
-                var pulse = 0.10 + 0.05 * Math.sin(Date.now() / 800);
-                ctx.beginPath();
-                ctx.arc(cx, cy, outerR, startAngle, endAngle);
-                ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
-                ctx.closePath();
-                ctx.fillStyle = hexToRgba(segColor, pulse);
-                ctx.fill();
+        // Tick marks for seconds
+        var ticksGroup = document.getElementById('svgTicks');
+        if (ticksGroup) {
+            ticksGroup.innerHTML = '';
+            var tickR = 88;
+            for (var t = 0; t < 60; t++) {
+                var a = (t * 2 * Math.PI / 60) - Math.PI / 2;
+                var isMajor = t % 5 === 0;
+                var len = isMajor ? 5 : 2;
+                var x1 = SVG_CX + (tickR - len) * Math.cos(a);
+                var y1 = SVG_CY + (tickR - len) * Math.sin(a);
+                var x2 = SVG_CX + tickR * Math.cos(a);
+                var y2 = SVG_CY + tickR * Math.sin(a);
+                var line = document.createElementNS(SVG_NS, 'line');
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', isMajor ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)');
+                line.setAttribute('stroke-width', isMajor ? '1' : '0.5');
+                line.setAttribute('stroke-linecap', 'round');
+                ticksGroup.appendChild(line);
             }
         }
+    }
 
-        var labelR = (outerR + ringR + ringW / 2) / 2;
-        ctx.font = '600 ' + Math.max(9, outerR * 0.065) + 'px ' + getCSSVar('--fn');
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        for (var j = 0; j < 7; j++) {
-            var angle = (j * 2 * Math.PI / 7) - Math.PI / 2;
-            var lx = cx + labelR * Math.cos(angle);
-            var ly = cy + labelR * Math.sin(angle);
-            ctx.fillStyle = j === dayIndex ? hexToRgba(dayColor, 0.9) : labelInactive;
-            ctx.fillText(DAYS_SHORT[j], lx, ly);
+    function updateClockSvg() {
+        var now = new Date();
+        var h = now.getHours();
+        var m = now.getMinutes();
+        var s = now.getSeconds();
+        var ms = now.getMilliseconds();
+        var dayIndex = relDay(now);
+        var dayColor = COLORS[dayIndex];
+        var isLight = document.body.classList.contains('lt');
+
+        // Seconds ring
+        var secProgress = (s + ms / 1000) / 60;
+        if (svgRingEl) {
+            svgRingEl.style.strokeDashoffset = SEC_RING_CIRCUMFERENCE * (1 - secProgress);
+        }
+        if (svgRingGradStop1) svgRingGradStop1.setAttribute('stop-color', dayColor);
+        if (svgRingGradStop2) svgRingGradStop2.setAttribute('stop-color', lightenHex(dayColor, 0.3));
+
+        // Day progress ring (24h)
+        var dayMs = h * 3600000 + m * 60000 + s * 1000 + ms;
+        var dayProgress = dayMs / 86400000;
+        if (svgDayRingFill) {
+            svgDayRingFill.style.strokeDashoffset = DAY_RING_CIRCUMFERENCE * (1 - dayProgress);
+        }
+        if (svgDayGradStop1) svgDayGradStop1.setAttribute('stop-color', dayColor);
+        if (svgDayGradStop2) svgDayGradStop2.setAttribute('stop-color', lightenHex(dayColor, 0.25));
+
+        // Ring backgrounds
+        var ringBgs = document.querySelectorAll('.ring-bg');
+        for (var r = 0; r < ringBgs.length; r++) {
+            ringBgs[r].style.stroke = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
         }
 
-        var progress = (s + ms / 1000) / 60;
-        var ringStart = -Math.PI / 2;
-        var ringEnd = ringStart + progress * 2 * Math.PI;
+        // Day dots
+        for (var i = 0; i < svgDayEls.length; i++) {
+            var isActive = i === dayIndex;
+            svgDayEls[i].setAttribute('r', isActive ? '4' : '2.5');
+            svgDayEls[i].setAttribute('opacity', isActive ? '1' : '0.2');
+            svgDayEls[i].style.filter = isActive ? 'url(#dotGlow)' : 'none';
+        }
 
-        ctx.beginPath();
-        ctx.arc(cx, cy, ringR, 0, 2 * Math.PI);
-        ctx.strokeStyle = hexToRgba(dayColor, 0.08);
-        ctx.lineWidth = ringW;
-        ctx.lineCap = 'round';
-        ctx.stroke();
+        // SVG text elements
+        var svgDay = document.getElementById('svgDay');
+        var svgTime = document.getElementById('svgTime');
+        var svgSec = document.getElementById('svgSec');
+        var svgDate = document.getElementById('svgDate');
 
-        ctx.beginPath();
-        ctx.arc(cx, cy, ringR, ringStart, ringEnd);
-        ctx.strokeStyle = dayColor;
-        ctx.lineWidth = ringW;
-        ctx.lineCap = 'round';
-        ctx.stroke();
+        if (svgDay) svgDay.textContent = DAYS_SHORT_RU[dayIndex];
+        if (svgTime) svgTime.textContent = pad(h) + ':' + pad(m);
+        if (svgSec) svgSec.textContent = pad(s);
+        if (svgDate) svgDate.textContent = now.getDate() + ' ' + MONTHS_SHORT[now.getMonth()];
 
-        var glowX = cx + ringR * Math.cos(ringEnd);
-        var glowY = cy + ringR * Math.sin(ringEnd);
-        var glowGrad = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, ringW * 2.5);
-        glowGrad.addColorStop(0, hexToRgba(dayColor, 0.45));
-        glowGrad.addColorStop(1, hexToRgba(dayColor, 0));
-        ctx.beginPath();
-        ctx.arc(glowX, glowY, ringW * 2.5, 0, 2 * Math.PI);
-        ctx.fillStyle = glowGrad;
-        ctx.fill();
+        // Time of day badge
+        var svgSt = document.getElementById('svgSt');
+        if (svgSt) {
+            var isWeekend = dayIndex >= 5;
+            var periods = isWeekend
+                ? ['Выходной · Ночь', 'Выходной · Утро', 'Выходной · День', 'Выходной · Вечер']
+                : ['Ночь', 'Утро', 'День', 'Вечер'];
+            svgSt.textContent = periods[h < 6 ? 0 : h < 12 ? 1 : h < 18 ? 2 : 3];
+        }
     }
 
     function hideSplash() {
         setTimeout(function () { if (el.splash) el.splash.classList.add('hide'); }, 1000);
         setTimeout(function () { if (el.splash) el.splash.style.display = 'none'; }, 1500);
-    }
-
-    function animFrame(ts) {
-        drawClock(new Date());
-        requestAnimationFrame(animFrame);
     }
 
     function loadSettings() {
@@ -219,6 +311,8 @@
             applyTheme(t);
             if (el.themeSel) el.themeSel.value = t;
             if (s.anims === false) { anims = false; if (el.animToggle) el.animToggle.checked = false; }
+            if (s.sortBy) sortBy = s.sortBy;
+            if (s.categoryFilter) categoryFilter = s.categoryFilter;
             applyAnimPref();
         } catch (e) { }
     }
@@ -227,7 +321,9 @@
         try {
             localStorage.setItem(STORAGE_SETTINGS, JSON.stringify({
                 theme: el.themeSel ? el.themeSel.value : 'system',
-                anims: el.animToggle ? el.animToggle.checked : true
+                anims: el.animToggle ? el.animToggle.checked : true,
+                sortBy: sortBy,
+                categoryFilter: categoryFilter
             }));
         } catch (e) { }
     }
@@ -263,12 +359,19 @@
         return d.innerHTML;
     }
 
+    var _userTapped = false;
+    function markUserGesture() { _userTapped = true; }
+    document.addEventListener('pointerdown', markUserGesture, { once: true, passive: true });
+    document.addEventListener('keydown', markUserGesture, { once: true, passive: true });
+
     function haptic(type) {
-        if (!navigator.vibrate) return;
-        if (type === 'error') navigator.vibrate([15, 50, 15]);
-        else if (type === 'success') navigator.vibrate([10, 30, 10]);
-        else if (type === 'medium') navigator.vibrate(20);
-        else navigator.vibrate(10);
+        if (!navigator.vibrate || !_userTapped) return;
+        try {
+            if (type === 'error') navigator.vibrate([15, 50, 15]);
+            else if (type === 'success') navigator.vibrate([10, 30, 10]);
+            else if (type === 'medium') navigator.vibrate(20);
+            else navigator.vibrate(10);
+        } catch (e) { }
     }
 
     function notify(msg, type) {
@@ -309,10 +412,6 @@
         var now = new Date();
         var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds(), ms = now.getMilliseconds();
 
-        el.h.textContent = pad(h);
-        el.m.textContent = pad(m);
-        el.s.textContent = pad(s);
-
         if (el.hdrH) el.hdrH.textContent = pad(h);
         if (el.hdrM) el.hdrM.textContent = pad(m);
         if (el.hdrS) el.hdrS.textContent = pad(s);
@@ -324,22 +423,12 @@
         var dayIndex = relDay(now);
         if (prevDay !== dayIndex) {
             prevDay = dayIndex;
-            var c = COLORS[dayIndex];
-            el.dn.textContent = DAYS[dayIndex];
-            el.dn.style.color = c;
-            el.h.style.color = c;
-            el.m.style.color = c;
+            haptic('light');
+            checkRecurring(now);
         }
-
-        el.ds.textContent = now.getDate() + ' ' + MONTHS[now.getMonth()] + ' ' + now.getFullYear();
 
         if (prevHour !== h) {
             prevHour = h;
-            var isWeekend = dayIndex >= 5;
-            var periods = isWeekend
-                ? ['Выходной · Ночь', 'Выходной · Утро', 'Выходной · День', 'Выходной · Вечер']
-                : ['Ночь', 'Утро', 'День', 'Вечер'];
-            el.st.textContent = periods[h < 6 ? 0 : h < 12 ? 1 : h < 18 ? 2 : 3];
             announceTime(pad(h) + ':' + pad(m) + ', ' + DAYS[dayIndex]);
         }
 
@@ -350,10 +439,143 @@
             if (counters[x] && ts2) counters[x].textContent = fmtCounter(ts2, tp2);
         }
 
+        checkNotifications(now);
+
         requestAnimationFrame(tick);
     }
 
+    function localISO(d) {
+        var off = d.getTimezoneOffset();
+        var local = new Date(d.getTime() - off * 60000);
+        return local.toISOString().slice(0, 16);
+    }
+
     function relDay(d) { return d.getDay() === 0 ? 6 : d.getDay() - 1; }
+
+    function autoDetectType() {
+        if (!el.timerDate || !el.timerType) return;
+        var val = el.timerDate.value;
+        if (!val) return;
+        var selected = new Date(val).getTime();
+        var now = Date.now();
+        el.timerType.value = selected < now ? 'elapsed' : 'countdown';
+    }
+
+    var CAT_NAMES = { work: 'Работа', health: 'Здоровье', personal: 'Личное', study: 'Учёба', travel: 'Путешествия' };
+    var REC_NAMES = { weekly: 'Еженед.', monthly: 'Ежемес.', yearly: 'Ежегод.' };
+    var TPL_DATA = {
+        sobriety: { title: 'Не курю', type: 'elapsed', color: '#30d158', category: 'health', recurring: '', reminder: false },
+        work: { title: 'На работе уже', type: 'elapsed', color: '#0a84ff', category: 'work', recurring: '', reminder: false },
+        vacation: { title: 'До отпуска', type: 'countdown', color: '#ff8c00', category: 'travel', recurring: '', reminder: true },
+        language: { title: 'Изучение языка', type: 'elapsed', color: '#bf5af2', category: 'study', recurring: '', reminder: false },
+        fitness: { title: 'Фитнес streak', type: 'elapsed', color: '#ff6b6b', category: 'health', recurring: '', reminder: false },
+        savings: { title: 'Накопления', type: 'elapsed', color: '#5cd66e', category: 'personal', recurring: '', reminder: false }
+    };
+
+    function requestNotifPermission() {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    function sendNotification(title, body) {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        try {
+            new Notification(title, { body: body, icon: './icon-192.png', badge: './icon-192.png', tag: 'chronoflow' });
+        } catch (e) { }
+    }
+
+    function checkNotifications(now) {
+        var ts = now.getTime();
+        for (var i = 0; i < timers.length; i++) {
+            var t = timers[i];
+            if (t.type !== 'countdown' || !t.reminder) continue;
+            var diff = t.date - ts;
+            if (diff > 0 && diff < 86400000 && !notifiedTimers[t.id]) {
+                notifiedTimers[t.id] = true;
+                sendNotification('ChronoFlow', t.title + ' — завтра!');
+            } else if (diff <= 0 && diff > -3600000 && !notifiedTimers[t.id + '_done']) {
+                notifiedTimers[t.id + '_done'] = true;
+                sendNotification('ChronoFlow', t.title + ' наступил!');
+            }
+        }
+    }
+
+    function checkRecurring(now) {
+        var changed = false;
+        for (var i = 0; i < timers.length; i++) {
+            var t = timers[i];
+            if (!t.recurring || t.type !== 'countdown') continue;
+            if (now.getTime() > t.date) {
+                var d = new Date(t.date);
+                if (t.recurring === 'weekly') d.setDate(d.getDate() + 7);
+                else if (t.recurring === 'monthly') d.setMonth(d.getMonth() + 1);
+                else if (t.recurring === 'yearly') d.setFullYear(d.getFullYear() + 1);
+                t.date = d.getTime();
+                changed = true;
+            }
+        }
+        if (changed) { saveTimers(); render(); }
+    }
+
+    function exportImage() {
+        var card = el.timerList.querySelector('.tc-card');
+        if (!card) { notify('Нет счётчиков', 'error'); return; }
+        var cvs = document.createElement('canvas');
+        cvs.width = 800; cvs.height = 600;
+        var c = cvs.getContext('2d');
+        if (!c.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+                if (typeof r === 'number') r = [r, r, r, r];
+                this.moveTo(x + r[0], y);
+                this.lineTo(x + w - r[1], y);
+                this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+                this.lineTo(x + w, y + h - r[2]);
+                this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+                this.lineTo(x + r[3], y + h);
+                this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+                this.lineTo(x, y + r[0]);
+                this.quadraticCurveTo(x, y, x + r[0], y);
+                this.closePath();
+            };
+        }
+        c.fillStyle = '#000'; c.fillRect(0, 0, 800, 600);
+        var grad = c.createLinearGradient(0, 0, 800, 600);
+        grad.addColorStop(0, '#0a84ff'); grad.addColorStop(1, '#bf5af2');
+        c.fillStyle = grad; c.globalAlpha = 0.15; c.fillRect(0, 0, 800, 600); c.globalAlpha = 1;
+        c.fillStyle = '#fff'; c.font = '700 36px -apple-system, sans-serif'; c.textAlign = 'center';
+        c.fillText('ChronoFlow', 400, 60);
+        c.font = '400 16px -apple-system, sans-serif'; c.fillStyle = 'rgba(255,255,255,0.6)';
+        c.fillText(new Date().toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' }), 400, 90);
+        var items = el.timerList.querySelectorAll('.tc-card');
+        var y = 130;
+        var count = Math.min(items.length, 8);
+        for (var i = 0; i < count; i++) {
+            var el2 = items[i].querySelector('.tc-counter-val');
+            var titleEl = items[i].querySelector('.tc-title');
+            var typeEl = items[i].querySelector('.tc-type');
+            if (!el2 || !titleEl) continue;
+            c.fillStyle = 'rgba(255,255,255,0.08)';
+            c.beginPath(); c.roundRect(40, y, 720, 50, 12); c.fill();
+            c.fillStyle = '#fff'; c.font = '600 15px -apple-system, sans-serif'; c.textAlign = 'left';
+            c.fillText(titleEl.textContent, 60, y + 22);
+            c.fillStyle = el2.style.color || '#fff'; c.font = '300 18px monospace'; c.textAlign = 'right';
+            c.fillText(el2.textContent, 740, y + 28);
+            if (typeEl) {
+                c.fillStyle = 'rgba(255,255,255,0.4)'; c.font = '600 10px -apple-system, sans-serif';
+                c.fillText(typeEl.textContent, 740, y + 44);
+            }
+            y += 58;
+        }
+        cvs.toBlob(function (blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'chronoflow-' + new Date().toISOString().slice(0, 10) + '.png';
+            a.click(); URL.revokeObjectURL(url);
+            haptic('success'); notify('Изображение сохранено');
+        });
+    }
 
     function declension(value, forms) {
         value = Math.abs(value);
@@ -398,26 +620,6 @@
         return parts.join(' ');
     }
 
-    function fmtFull(timestamp, type) {
-        var p = parseDiff(timestamp, type);
-        var d = p.parts;
-        var remDy = d.dy;
-        var y = Math.floor(remDy / 365); remDy -= y * 365;
-        var mo = Math.floor(remDy / 30.44); remDy -= Math.floor(mo * 30.44);
-        var dd = Math.floor(remDy);
-        var rh = d.hr % 24;
-        var rm = d.mn % 60;
-        var rs = d.sc % 60;
-        var parts = [];
-        if (y > 0) parts.push(y + ' г.');
-        if (mo > 0) parts.push(mo + ' мес.');
-        if (dd > 0) parts.push(dd + ' дн.');
-        if (rh > 0) parts.push(rh + ' ч.');
-        if (rm > 0) parts.push(rm + ' мин.');
-        if (parts.length === 0) parts.push(rs + ' сек.');
-        return (p.negative && type === 'countdown' ? '+ ' : '') + parts.join(' ');
-    }
-
     function render() {
         var list = el.timerList;
         var empty = el.empty;
@@ -427,12 +629,33 @@
             filtered = filtered.filter(function (x) { return x.type === filter; });
         }
 
+        if (categoryFilter !== 'all') {
+            if (categoryFilter === '') {
+                filtered = filtered.filter(function (x) { return !x.category; });
+            } else {
+                filtered = filtered.filter(function (x) { return x.category === categoryFilter; });
+            }
+        }
+
+        if (searchQuery) {
+            var q = searchQuery.toLowerCase();
+            filtered = filtered.filter(function (x) { return x.title.toLowerCase().indexOf(q) !== -1; });
+        }
+
+        if (sortBy === 'name') {
+            filtered.sort(function (a, b) { return a.title.localeCompare(b.title, 'ru'); });
+        } else if (sortBy === 'date') {
+            filtered.sort(function (a, b) { return a.date - b.date; });
+        } else {
+            filtered.sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
+        }
+
         if (filtered.length === 0) {
             list.innerHTML = '';
             empty.classList.remove('hidden');
-            empty.querySelector('h3').textContent = 'Начните считать время';
-            empty.querySelector('p').textContent = 'Создайте первый счётчик и отслеживайте, как меняется ваше время';
-            empty.querySelector('.btn-p').textContent = 'Создать первый счётчик';
+            empty.querySelector('h3').textContent = 'Каждый день на счету';
+            empty.querySelector('p').textContent = 'Не курю 45 дней. До отпуска 128 дней. На новой работе 2 года. Создайте свой первый счётчик и начните считать то, что важно именно вам.';
+            empty.querySelector('.btn-p').textContent = 'Создать счётчик';
             empty.querySelector('.btn-p').onclick = openModal;
             return;
         }
@@ -457,25 +680,37 @@
             var dateStr = dt.toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             var typeLabel = isElapsed ? 'Прошло' : 'Осталось';
             var typeClass = isElapsed ? 'elapsed' : 'countdown';
+            var catLabel = '';
+            if (t.category && CAT_NAMES[t.category]) {
+                catLabel = '<span class="cat-tag ' + t.category + '">' + CAT_NAMES[t.category] + '</span>';
+            }
+            var recurringLabel = '';
+            if (t.recurring && REC_NAMES[t.recurring]) {
+                recurringLabel = '<span class="recurring-badge">' + REC_NAMES[t.recurring] + '</span>';
+            }
 
             card.innerHTML =
-                '<div class="tc-handle" aria-label="Перетащить" title="Перетащить"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div>' +
-                '<div class="tc-header"><div class="tc-title">' + esc(t.title) + '</div><div class="tc-type ' + typeClass + '">' + typeLabel + '</div></div>' +
-                '<div class="tc-counter"><div class="tc-counter-val" data-ts="' + t.date + '" data-type="' + t.type + '" style="color:' + t.color + '"></div></div>' +
-                '<div class="tc-date"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' + dateStr + '</div>' +
-                '<div class="tc-actions"><button class="ibtn-s ed" data-id="' + t.id + '" title="Редактировать" aria-label="Редактировать"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg></button><button class="ibtn-s dl" data-id="' + t.id + '" title="Удалить" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button></div>';
-
-            var wrap = document.createElement('div');
-            wrap.className = 'tc-swipe-wrap';
-            wrap.dataset.id = t.id;
-            wrap.innerHTML =
                 '<div class="tc-swipe-actions">' +
-                    '<button class="tc-swipe-btn delete" data-id="' + t.id + '" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Удалить</button>' +
-                    '<button class="tc-swipe-btn edit" data-id="' + t.id + '" aria-label="Редактировать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg>Изменить</button>' +
+                    '<button class="tc-swipe-edit" data-id="' + t.id + '" aria-label="Редактировать"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg>Изменить</button>' +
+                    '<button class="tc-swipe-delete" data-id="' + t.id + '" aria-label="Удалить"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Удалить</button>' +
+                '</div>' +
+                '<div class="tc-swipe-content">' +
+                    '<div class="tc-handle" aria-label="Перетащить" title="Перетащить"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div>' +
+                    '<div class="tc-body">' +
+                        '<div class="tc-row-top">' +
+                            '<div class="tc-title">' + esc(t.title) + '</div>' +
+                            '<div class="tc-actions">' +
+                                '<button class="ibtn-s ed" data-id="' + t.id + '" title="Редактировать" aria-label="Редактировать"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg></button>' +
+                                '<button class="ibtn-s dl" data-id="' + t.id + '" title="Удалить" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="tc-badges">' + catLabel + recurringLabel + '<span class="tc-type ' + typeClass + '">' + typeLabel + '</span></div>' +
+                        '<div class="tc-counter"><div class="tc-counter-val" data-ts="' + t.date + '" data-type="' + t.type + '" style="color:' + t.color + '"></div></div>' +
+                        '<div class="tc-date"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' + dateStr + '</div>' +
+                    '</div>' +
                 '</div>';
-            wrap.appendChild(card);
 
-            frag.appendChild(wrap);
+            frag.appendChild(card);
         }
 
         list.innerHTML = '';
@@ -488,6 +723,9 @@
         el.timerTitle.value = '';
         el.timerDate.value = '';
         if (el.timerType) el.timerType.value = 'elapsed';
+        if (el.timerCategory) el.timerCategory.value = '';
+        if (el.timerRecurring) el.timerRecurring.value = '';
+        if (el.timerReminder) el.timerReminder.checked = false;
         el.titleCnt.textContent = '0/' + MAX_TITLE;
         selectedColor = DEFAULT_COLOR;
         selectColor(selectedColor);
@@ -535,10 +773,13 @@
                 timers[idx].date = timestamp;
                 timers[idx].type = type;
                 timers[idx].color = selectedColor;
+                timers[idx].category = el.timerCategory ? el.timerCategory.value : '';
+                timers[idx].recurring = el.timerRecurring ? el.timerRecurring.value : '';
+                timers[idx].reminder = el.timerReminder ? el.timerReminder.checked : false;
             }
             notify('Обновлено');
         } else {
-            timers.push({ id: genId(), title: title, date: timestamp, type: type, color: selectedColor, created: Date.now() });
+            timers.push({ id: genId(), title: title, date: timestamp, type: type, color: selectedColor, created: Date.now(), category: el.timerCategory ? el.timerCategory.value : '', recurring: el.timerRecurring ? el.timerRecurring.value : '', reminder: el.timerReminder ? el.timerReminder.checked : false });
             notify('Добавлено');
         }
 
@@ -555,7 +796,7 @@
             closeModal();
         }
         render();
-        updateClockStats();
+        
     }
 
     function editTimer(id) {
@@ -565,8 +806,11 @@
         editId = id;
         el.mTitle.textContent = 'Редактировать';
         el.timerTitle.value = t.title;
-        el.timerDate.value = new Date(t.date).toISOString().slice(0, 16);
+        el.timerDate.value = localISO(new Date(t.date));
         if (el.timerType) el.timerType.value = t.type || 'elapsed';
+        if (el.timerCategory) el.timerCategory.value = t.category || '';
+        if (el.timerRecurring) el.timerRecurring.value = t.recurring || '';
+        if (el.timerReminder) el.timerReminder.checked = !!t.reminder;
         el.titleCnt.textContent = t.title.length + '/' + MAX_TITLE;
         selectedColor = t.color || DEFAULT_COLOR;
         selectColor(selectedColor);
@@ -598,7 +842,7 @@
                 saveTimers();
                 render();
                 showUndo();
-                updateClockStats();
+                
             }, 300);
         } else {
             lastDel = { timer: timer, index: idx };
@@ -606,7 +850,7 @@
             saveTimers();
             render();
             showUndo();
-            updateClockStats();
+            
         }
     }
 
@@ -634,7 +878,7 @@
         if (t) t.classList.remove('show');
         saveTimers();
         render();
-        updateClockStats();
+        
         haptic('light');
         notify('Восстановлено');
     }
@@ -643,7 +887,7 @@
         var m = el.confirmModal;
         $('confirmTitle').textContent = title;
         $('confirmMsg').textContent = msg;
-        $('confirmOk').textContent = okText;
+        $('confirmOk').textContent = okText || 'Удалить';
         lastFocus = document.activeElement;
         m.classList.add('show');
         trapFocus(m);
@@ -684,7 +928,7 @@
                 if (!valid.length) throw 0;
                 showConfirm('Импорт', 'Импортировать ' + valid.length + ' счётчиков?', 'Импортировать', function () {
                     timers = timers.concat(valid);
-                    saveTimers(); render(); updateClockStats();
+                    saveTimers(); render(); 
                     haptic('success');
                     notify('Импортировано ' + valid.length);
                 });
@@ -692,16 +936,6 @@
         };
         reader.readAsText(f);
         e.target.value = '';
-    }
-
-    function closeAllModals() {
-        var ms = document.querySelectorAll('.modal.show');
-        if (ms.length) {
-            ms.forEach(function (m) { m.classList.remove('show'); });
-            releaseFocus();
-            if (lastFocus) lastFocus.focus();
-        }
-        if (el.sModal && !el.sModal.classList.contains('show')) closeSettings();
     }
 
     function hslToHex(h, s, l) {
@@ -767,53 +1001,25 @@
         if (lastFocus) lastFocus.focus();
     }
 
-    function updateClockStats() {
-        var elapsed = 0, countdown = 0;
-        var now = Date.now();
-
-        for (var i = 0; i < timers.length; i++) {
-            var t = timers[i];
-            if (t.type === 'elapsed') elapsed++;
-            else countdown++;
-        }
-
-        var total = timers.length;
-        var totalEl = $('csTotal');
-        var elapsedEl = $('csElapsed');
-        var countdownEl = $('csCountdown');
-        if (totalEl) totalEl.querySelector('.cs-val').textContent = total;
-        if (elapsedEl) elapsedEl.querySelector('.cs-val').textContent = elapsed;
-        if (countdownEl) countdownEl.querySelector('.cs-val').textContent = countdown;
-    }
-
     var _scrollRaf = null;
     var _cachedWrapH = 0;
-    var _cachedStatsH = 0;
+    var _cachedWrap = null;
+    var _cachedSectionHdr = null;
 
     function initScroll() {
         if (!el.scrollPage) return;
         el.scrollPage.addEventListener('scroll', handleScroll, { passive: true });
+        _cachedWrap = el.clockSection ? el.clockSection.querySelector('.clock-wrap') : null;
+        _cachedSectionHdr = document.querySelector('.section-hdr');
         requestAnimationFrame(function () {
-            var wrap = el.clockSection ? el.clockSection.querySelector('.clock-wrap') : null;
-            var stats = el.clockSection ? el.clockSection.querySelector('.clock-stats') : null;
-            _cachedWrapH = wrap ? wrap.scrollHeight : 300;
-            _cachedStatsH = stats ? stats.scrollHeight : 0;
+            _cachedWrapH = _cachedWrap ? _cachedWrap.scrollHeight : 300;
         });
         var resizeTimer = null;
         window.addEventListener('resize', function () {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function () {
-                var wrap = el.clockSection ? el.clockSection.querySelector('.clock-wrap') : null;
-                var stats = el.clockSection ? el.clockSection.querySelector('.clock-stats') : null;
-                _cachedWrapH = wrap ? wrap.scrollHeight : 300;
-                _cachedStatsH = stats ? stats.scrollHeight : 0;
-                if (wrap) {
-                    wrap.style.cssText = '';
-                    wrap.classList.remove('collapsed');
-                }
-                if (stats) {
-                    stats.style.cssText = '';
-                }
+                _cachedWrapH = _cachedWrap ? _cachedWrap.scrollHeight : 300;
+                if (_cachedWrap) _cachedWrap.style.cssText = '';
                 handleScroll();
             }, 150);
         }, { passive: true });
@@ -826,45 +1032,32 @@
             if (!el.scrollPage || !el.hdrClock) return;
 
             var scrollTop = el.scrollPage.scrollTop;
-            var wrap = el.clockSection ? el.clockSection.querySelector('.clock-wrap') : null;
-            var stats = el.clockSection ? el.clockSection.querySelector('.clock-stats') : null;
-            var wrapH = _cachedWrapH;
-            var statsH = _cachedStatsH;
-            var totalH = wrapH + statsH + 16;
-            var trigger = totalH * 0.08;
-            var full = totalH * 0.45;
-            var progress = Math.max(0, Math.min(1, (scrollTop - trigger) / (full - trigger)));
-            var ease = progress * progress * (3 - 2 * progress);
+            var totalH = _cachedWrapH + 16;
 
-            el.hdrClock.style.opacity = ease;
-            el.hdrClock.style.transform = 'translateY(' + (1 - ease) * -8 + 'px)';
-            if (ease > 0.01) el.hdrClock.classList.add('show');
+            var p1 = Math.max(0, Math.min(1, scrollTop / (totalH * 0.6)));
+            var ease1 = p1 * p1 * (3 - 2 * p1);
+
+            var hdrOpacity = Math.max(0, Math.min(1, (scrollTop - totalH * 0.3) / (totalH * 0.3)));
+            el.hdrClock.style.opacity = hdrOpacity;
+            el.hdrClock.style.transform = 'translateY(' + (1 - hdrOpacity) * -6 + 'px)';
+            if (hdrOpacity > 0.01) el.hdrClock.classList.add('show');
             else el.hdrClock.classList.remove('show');
 
-            if (wrap) {
-                var s = 1 - ease * 0.6;
-                var ty = ease * -20;
-                var o = Math.max(0, 1 - ease * 1.5);
-                wrap.style.transform = 'scale(' + s + ') translateY(' + ty + 'px)';
-                wrap.style.opacity = o;
-                wrap.style.overflow = ease > 0.05 ? 'hidden' : 'visible';
-            }
-            if (stats) {
-                var sE = Math.max(0, Math.min(1, (scrollTop - trigger * 0.5) / (full * 0.5)));
-                var ss = 1 - sE * 0.15;
-                var sty = sE * -12;
-                var so = Math.max(0, 1 - sE * 1.4);
-                stats.style.transform = 'scale(' + ss + ') translateY(' + sty + 'px)';
-                stats.style.opacity = so;
-                stats.style.overflow = sE > 0.05 ? 'hidden' : 'visible';
+            if (_cachedWrap) {
+                var s = 1 - ease1 * 0.12;
+                var ty = ease1 * -10;
+                var o = Math.max(0, 1 - ease1 * 1.2);
+                _cachedWrap.style.transform = 'scale(' + s + ') translateY(' + ty + 'px)';
+                _cachedWrap.style.opacity = o;
             }
 
-            var sectionHdr = document.querySelector('.section-hdr');
-            if (sectionHdr && timers.length === 0) {
-                if (scrollTop > totalH * 0.25) sectionHdr.classList.remove('shifted');
-                else sectionHdr.classList.add('shifted');
-            } else if (sectionHdr) {
-                sectionHdr.classList.remove('shifted');
+            if (_cachedSectionHdr) {
+                if (timers.length === 0) {
+                    if (scrollTop > totalH * 0.4) _cachedSectionHdr.classList.remove('shifted');
+                    else _cachedSectionHdr.classList.add('shifted');
+                } else {
+                    _cachedSectionHdr.classList.remove('shifted');
+                }
             }
         });
     }
@@ -916,8 +1109,8 @@
     }
 
     function bindEvents() {
-        if (el.addBtn) el.addBtn.onclick = openModal;
         if (el.addFirstBtn) el.addFirstBtn.onclick = openModal;
+        if (el.addTimerBtn) el.addTimerBtn.onclick = function () { haptic('light'); openModal(); };
         if (el.closeModal) el.closeModal.onclick = closeModal;
         if (el.cancelBtn) el.cancelBtn.onclick = closeModal;
         if (el.timerForm) el.timerForm.onsubmit = function (e) { e.preventDefault(); saveTimer(); };
@@ -928,16 +1121,17 @@
             el.titleCnt.textContent = Math.min(l, MAX_TITLE) + '/' + MAX_TITLE;
         };
 
-        if (el.clockDisplay) el.clockDisplay.addEventListener('click', function () { haptic('light'); });
-
         if (el.datePickerBtn) el.datePickerBtn.onclick = function () {
             el.timerDate.showPicker ? el.timerDate.showPicker() : el.timerDate.click();
         };
 
         if (el.resetTimeBtn) el.resetTimeBtn.onclick = function () {
-            el.timerDate.value = new Date().toISOString().slice(0, 16);
+            el.timerDate.value = localISO(new Date());
+            autoDetectType();
             haptic('light');
         };
+
+        if (el.timerDate) el.timerDate.addEventListener('change', autoDetectType);
 
         var colorPick = document.getElementById('colorPick');
         var customColorBtn = document.getElementById('customColorBtn');
@@ -1000,28 +1194,113 @@
         var filterBtn = $('filterBtn');
         if (filterBtn) filterBtn.onclick = function () {
             var fs = $('fSelect');
+            var ss = $('sortSelect');
+            var cs = $('catSelect');
             if (fs) fs.value = filter;
+            if (ss) ss.value = sortBy;
+            if (cs) cs.value = categoryFilter;
             el.fModal.classList.add('show');
             trapFocus(el.fModal);
         };
 
         var closeFModal = $('closeFModal');
-        if (closeFModal) closeFModal.onclick = function () { el.fModal.classList.remove('show'); releaseFocus(); };
+        if (closeFModal) closeFModal.onclick = function () { el.fModal.classList.remove('show'); releaseFocus(); if (lastFocus) lastFocus.focus(); };
 
         var applyFBtn = $('applyFBtn');
         if (applyFBtn) applyFBtn.onclick = function () {
             var fs = $('fSelect');
+            var ss = $('sortSelect');
+            var cs = $('catSelect');
             if (fs) filter = fs.value;
+            if (ss) sortBy = ss.value;
+            if (cs) categoryFilter = cs.value;
+            saveSettings();
             el.fModal.classList.remove('show');
             releaseFocus();
             render();
         };
 
-        var exportBtn = $('exportBtn');
-        if (exportBtn) exportBtn.onclick = exportJSON;
+        var exportImgBtn = $('exportImgBtn');
+        if (exportImgBtn) exportImgBtn.onclick = function () {
+            el.fModal.classList.remove('show');
+            releaseFocus();
+            exportImage();
+        };
 
-        var importBtn = $('importBtn');
-        if (importBtn) importBtn.onclick = importTimers;
+        var tplBtns = document.querySelectorAll('.tpl-btn');
+        for (var ti = 0; ti < tplBtns.length; ti++) {
+            tplBtns[ti].onclick = function () {
+                var tpl = TPL_DATA[this.dataset.tpl];
+                if (!tpl) return;
+                el.fModal.classList.remove('show');
+                releaseFocus();
+                editId = null;
+                el.mTitle.textContent = 'Новый счётчик';
+                el.timerTitle.value = tpl.title;
+                var now = new Date();
+                if (tpl.type === 'countdown') {
+                    now.setDate(now.getDate() + 30);
+                }
+                el.timerDate.value = localISO(now);
+                if (el.timerType) el.timerType.value = tpl.type;
+                if (el.timerCategory) el.timerCategory.value = tpl.category || '';
+                if (el.timerRecurring) el.timerRecurring.value = tpl.recurring || '';
+                if (el.timerReminder) el.timerReminder.checked = tpl.reminder || false;
+                el.titleCnt.textContent = tpl.title.length + '/' + MAX_TITLE;
+                selectedColor = tpl.color;
+                selectColor(selectedColor);
+                if (el.saveMoreRow) el.saveMoreRow.style.display = 'none';
+                lastFocus = document.activeElement;
+                history.pushState({ modal: true }, '');
+                el.timerModal.classList.add('show');
+                trapFocus(el.timerModal);
+                setTimeout(function () { el.timerTitle.focus(); }, 100);
+            };
+        }
+
+        if (el.searchBtn) {
+            el.searchBtn.onclick = function () {
+                haptic('light');
+                var isOpen = el.searchBar.classList.toggle('open');
+                el.searchBtn.classList.toggle('active', isOpen);
+                if (isOpen) {
+                    setTimeout(function () { el.searchInput.focus(); }, 200);
+                } else {
+                    el.searchInput.value = '';
+                    searchQuery = '';
+                    if (el.searchClear) el.searchClear.classList.add('hidden');
+                    render();
+                }
+            };
+        }
+
+        if (el.searchInput) {
+            el.searchInput.oninput = function () {
+                searchQuery = this.value.trim();
+                if (el.searchClear) el.searchClear.classList.toggle('hidden', !searchQuery);
+                render();
+            };
+            el.searchInput.onkeydown = function (e) {
+                if (e.key === 'Escape') {
+                    el.searchBtn.click();
+                }
+            };
+        }
+        if (el.searchClear) {
+            el.searchClear.onclick = function () {
+                el.searchInput.value = '';
+                searchQuery = '';
+                this.classList.add('hidden');
+                render();
+            };
+        }
+
+        if (el.catSelect) {
+            el.catSelect.onchange = function () {
+                categoryFilter = el.catSelect.value;
+                render();
+            };
+        }
 
         var clearBtn = $('clearBtn');
         if (clearBtn) clearBtn.onclick = function () {
@@ -1029,13 +1308,34 @@
                 timers = [];
                 saveTimers();
                 render();
-                updateClockStats();
+                
                 notify('Очищено');
             });
         };
 
+        requestNotifPermission();
+
+        var exportBtn = $('exportBtn');
+        if (exportBtn) exportBtn.onclick = exportJSON;
+
+        var importBtn = $('importBtn');
+        if (importBtn) importBtn.onclick = importTimers;
+
         if (el.themeSel) el.themeSel.onchange = function () { applyTheme(el.themeSel.value); saveSettings(); };
         if (el.animToggle) el.animToggle.onchange = function () { anims = el.animToggle.checked; applyAnimPref(); saveSettings(); };
+
+        var srRows = document.querySelectorAll('.sr:has(.sw)');
+        for (var i = 0; i < srRows.length; i++) {
+            srRows[i].addEventListener('click', function (e) {
+                if (e.target.closest('.sw') || e.target.tagName === 'INPUT') return;
+                var input = this.querySelector('.sw input');
+                if (input) {
+                    input.checked = !input.checked;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                    haptic('light');
+                }
+            });
+        }
 
         var closeSModal = $('closeSModal');
         if (closeSModal) closeSModal.onclick = function () { closeSettings(); };
@@ -1157,11 +1457,11 @@
                 clearDragIndicators();
             });
 
-            initSwipeActions();
         }
 
         initPullToRefresh();
         initModalSwipe();
+        initCardSwipe();
 
         var settingsBtn = $('settingsBtn');
         if (settingsBtn) settingsBtn.onclick = function () { haptic('light'); openSettings(); };
@@ -1234,87 +1534,120 @@
         init();
     }
 
-    function initSwipeActions() {
-        if (!el.timerList || !isTouch) return;
-        var swipeState = null;
-        var openSwipeWrap = null;
+    function initCardSwipe() {
+        if (!el.timerList) return;
+        var activeSwipe = null;
+        var startX = 0;
+        var startY = 0;
+        var swiping = false;
+        var isHorizontal = false;
 
         el.timerList.addEventListener('touchstart', function (e) {
-            if (openSwipeWrap) { resetSwipe(openSwipeWrap); openSwipeWrap = null; }
+            if (!isTouch) return;
+            var content = e.target.closest('.tc-swipe-content');
+            if (!content) return;
+            var wrap = content.closest('.tc-card');
+            if (!wrap) return;
             var handle = e.target.closest('.tc-handle');
             if (handle) return;
-            var wrap = e.target.closest('.tc-swipe-wrap');
-            if (!wrap) return;
-            var card = wrap.querySelector('.tc-card');
-            if (!card) return;
-            var touch = e.touches[0];
-            swipeState = { wrap: wrap, card: card, startX: touch.clientX, startY: touch.clientY, moved: false, swiping: false };
+            var btn = e.target.closest('.tc-actions button, .tc-swipe-actions button');
+            if (btn) return;
+
+            if (activeSwipe && activeSwipe !== wrap) {
+                resetSwipe(activeSwipe);
+            }
+
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            swiping = false;
+            isHorizontal = false;
+            activeSwipe = wrap;
         }, { passive: true });
 
         el.timerList.addEventListener('touchmove', function (e) {
-            if (!swipeState) return;
-            var touch = e.touches[0];
-            var dx = touch.clientX - swipeState.startX;
-            var dy = touch.clientY - swipeState.startY;
+            if (!isTouch || !activeSwipe) return;
+            var dx = e.touches[0].clientX - startX;
+            var dy = e.touches[0].clientY - startY;
 
-            if (!swipeState.swiping && Math.abs(dy) > Math.abs(dx)) {
-                swipeState = null;
+            if (!swiping && !isHorizontal) {
+                if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        isHorizontal = true;
+                        swiping = true;
+                    } else {
+                        activeSwipe = null;
+                        return;
+                    }
+                }
                 return;
             }
 
-            if (Math.abs(dx) > 8) {
-                swipeState.swiping = true;
-                swipeState.moved = true;
-                e.preventDefault();
-                var card = swipeState.card;
-                card.classList.add('swiping');
-                var clamped = Math.max(-144, Math.min(0, dx));
-                card.style.transform = 'translateX(' + clamped + 'px)';
-            }
+            if (!isHorizontal) return;
+            e.preventDefault();
+
+            var content = activeSwipe.querySelector('.tc-swipe-content');
+            if (!content) return;
+            var offset = Math.min(0, Math.max(-144, dx));
+            content.classList.add('swiping');
+            content.style.transform = 'translateX(' + offset + 'px)';
         }, { passive: false });
 
         el.timerList.addEventListener('touchend', function () {
-            if (!swipeState || !swipeState.moved) { swipeState = null; return; }
-            var card = swipeState.card;
-            var wrap = swipeState.wrap;
-            card.classList.remove('swiping');
-            var transform = card.style.transform;
-            var match = transform.match(/translateX\(([-\d.]+)px\)/);
+            if (!isTouch || !activeSwipe) return;
+            var content = activeSwipe.querySelector('.tc-swipe-content');
+            if (!content) { activeSwipe = null; return; }
+            content.classList.remove('swiping');
+            var transform = content.style.transform;
+            var match = transform.match(/translateX\((-?[\d.]+)px\)/);
             var dx = match ? parseFloat(match[1]) : 0;
 
-            if (dx < -80) {
-                haptic('medium');
-                openSwipeWrap = wrap;
-                card.style.transform = 'translateX(-144px)';
-                card.style.transition = 'transform .25s var(--ease-smooth)';
-                setTimeout(function () { card.style.transition = ''; }, 300);
+            if (dx < -100) {
+                content.style.transform = 'translateX(-144px)';
             } else {
-                card.style.transform = '';
+                content.style.transform = '';
             }
-
-            var delBtn = wrap.querySelector('.tc-swipe-btn.delete');
-            var edBtn = wrap.querySelector('.tc-swipe-btn.edit');
-            if (delBtn) delBtn.onclick = function () { haptic('medium'); delTimer(wrap.dataset.id); resetSwipe(wrap); };
-            if (edBtn) edBtn.onclick = function () { haptic('light'); editTimer(wrap.dataset.id); resetSwipe(wrap); };
-            swipeState = null;
-        });
+            activeSwipe = null;
+        }, { passive: true });
 
         el.timerList.addEventListener('touchcancel', function () {
-            if (swipeState && swipeState.card) {
-                swipeState.card.classList.remove('swiping');
-                swipeState.card.style.transform = '';
+            if (activeSwipe) {
+                resetSwipe(activeSwipe);
+                activeSwipe = null;
             }
-            swipeState = null;
-        });
-    }
+        }, { passive: true });
 
-    function resetSwipe(wrap) {
-        if (!wrap) return;
-        var card = wrap.querySelector('.tc-card');
-        if (!card) return;
-        card.style.transform = '';
-        card.style.transition = 'transform .25s var(--ease-spring)';
-        setTimeout(function () { card.style.transition = ''; }, 300);
+        function resetSwipe(card) {
+            var content = card.querySelector('.tc-swipe-content');
+            if (content) {
+                content.classList.remove('swiping');
+                content.style.transform = '';
+            }
+        }
+
+        document.addEventListener('touchstart', function (e) {
+            if (!activeSwipe) return;
+            if (!e.target.closest('.tc-card')) {
+                resetSwipe(activeSwipe);
+                activeSwipe = null;
+            }
+        }, { passive: true });
+
+        el.timerList.addEventListener('click', function (e) {
+            var editBtn = e.target.closest('.tc-swipe-edit');
+            var deleteBtn = e.target.closest('.tc-swipe-delete');
+            if (editBtn) {
+                var id = editBtn.dataset.id;
+                var card = editBtn.closest('.tc-card');
+                if (card) resetSwipe(card);
+                haptic('light');
+                editTimer(id);
+            } else if (deleteBtn) {
+                var id2 = deleteBtn.dataset.id;
+                var card2 = deleteBtn.closest('.tc-card');
+                if (card2) resetSwipe(card2);
+                delTimer(id2);
+            }
+        });
     }
 
     function initPullToRefresh() {
@@ -1357,7 +1690,7 @@
                 if (svg) svg.style.transform = '';
                 setTimeout(function () {
                     render();
-                    updateClockStats();
+                    
                     indicator.classList.remove('active', 'refreshing');
                     indicator.style.height = '';
                     indicator.style.opacity = '';
@@ -1430,5 +1763,63 @@
                 modal.style.opacity = '';
             });
         });
+    }
+
+    var _pausedAt = null;
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            _pausedAt = Date.now();
+        } else {
+            if (_pausedAt) {
+                var gap = Date.now() - _pausedAt;
+                if (gap > 5000) {
+                    render();
+                    
+                }
+                _pausedAt = null;
+            }
+        }
+    });
+
+    window.addEventListener('focus', function () {
+        if (_pausedAt) {
+            var gap = Date.now() - _pausedAt;
+            if (gap > 5000) {
+                render();
+                
+            }
+            _pausedAt = null;
+        }
+    });
+
+    if (!isTouch && el.scrollPage) {
+        var _wheelTimer = null;
+        el.scrollPage.addEventListener('wheel', function (e) {
+            if (e.deltaY < 0 && el.scrollPage.scrollTop <= 0 && !_wheelTimer) {
+                _wheelTimer = setTimeout(function () {
+                    var indicator = $('pullIndicator');
+                    if (indicator) {
+                        haptic('medium');
+                        indicator.classList.add('active', 'refreshing');
+                        indicator.style.height = '56px';
+                        indicator.style.opacity = '1';
+                        setTimeout(function () {
+                            render();
+                            
+                            indicator.classList.remove('active', 'refreshing');
+                            indicator.style.height = '';
+                            indicator.style.opacity = '';
+            notify('Готово!');
+
+
+                        }, 600);
+                    }
+                    _wheelTimer = null;
+                }, 300);
+            } else if (e.deltaY > 0) {
+                clearTimeout(_wheelTimer);
+                _wheelTimer = null;
+            }
+        }, { passive: true });
     }
 })();
