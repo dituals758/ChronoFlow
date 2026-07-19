@@ -35,7 +35,7 @@
         </div>
     </div>
 
-    <header role="banner">
+    <header>
         <div class="hdr">
             <div class="hdr-left">
                 <div class="hdr-brand">
@@ -46,7 +46,7 @@
                 </div>
             </div>
             <div class="hdr-right">
-                <div class="hdr-clock" id="hdrClock" style="opacity: 0; transform: translateY(-6px);">
+                <div class="hdr-clock" id="hdrClock" style="opacity: 0; transform: translateY(-6px);" aria-live="polite" aria-atomic="true">
                     <span id="hdrH">00</span><span class="hdr-colon">:</span><span id="hdrM">00</span><span class="hdr-colon">:</span><span id="hdrS">00</span>
                     <span class="hdr-date" id="hdrDate"></span>
                 </div>
@@ -56,7 +56,7 @@
         </div>
     </header>
 
-    <main id="main" role="main">
+    <main id="main">
         <div class="scroll-page" id="scrollPage" aria-label="Основной контент">
             <section id="clockSection" role="region" aria-label="Часы">
                 <div class="clock-wrap" id="clockWrap">
@@ -77,8 +77,8 @@
                             </defs>
 
                             <!-- Outer ring: seconds -->
-                            <circle class="ring-bg" cx="100" cy="100" r="88" fill="none" stroke-width="4"/>
-                            <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="88" fill="none" stroke-width="4" stroke-linecap="round" transform="rotate(-90 100 100)" stroke="url(#ringGrad)"/>
+                            <circle class="ring-bg" cx="100" cy="100" r="88" fill="none" stroke-width="3"/>
+                            <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="88" fill="none" stroke-width="3" stroke-linecap="round" transform="rotate(-90 100 100)" stroke="url(#ringGrad)"/>
 
                             <!-- Inner ring: day progress (24h) -->
                             <circle class="ring-bg day-ring" cx="100" cy="100" r="76" fill="none" stroke-width="3"/>
@@ -138,8 +138,7 @@
                         </div>
                     </div>
                     <h3>Каждый день на счету</h3>
-                    <p>ChronoFlow — минималистичный таймер для отслеживания времени. Считайте дни до важных событий или после них. Всё работает полностью офлайн, без регистрации и серверов. <br>
-                    <p>Считайте дни без вредной привычки, отслеживайте стаж на работе, следите за прогрессом в учёбе или просто не теряйте из виду важные даты. ChronoFlow покажет, как быстро летит время — и поможет не упустить ни одного дня.</p>
+                    <p>ChronoFlow — офлайн-таймер для всего, что важно. Не курю 45 дней. До отпуска 128 дней. На работе 2 года. Создайте свой счётчик и начните считать.</p>
                     <button class="btn-p" id="addFirstBtn">Создать счётчик</button>
                 </div>
             </section>
@@ -166,7 +165,6 @@
                             <option value="elapsed">Сколько прошло с даты</option>
                             <option value="countdown">Сколько осталось до даты</option>
                         </select>
-                        
                     </div>
                 </div>
                 <div class="fg">
@@ -222,24 +220,22 @@
                         <option value="study">Учёба</option>
                         <option value="travel">Путешествия</option>
                     </select>
-                        
                     </div>
                 </div>
                 <div class="fg">
                     <label for="timerRecurring">Повтор</label>
                     <div class="select-wrap">
-                        <select id="timerRecurring">
+                        <select id="timerRecurring" aria-label="Тип повтора">
                             <option value="">Одноразовый</option>
                             <option value="weekly">Каждую неделю</option>
                             <option value="monthly">Каждый месяц</option>
                             <option value="yearly">Каждый год</option>
                         </select>
-                        
                     </div>
                 </div>
                 <div class="fg">
                     <div class="sr">
-                        <span>Напоминание</span>
+                        <label for="timerReminder">Напоминание</label>
                         <label class="sw">
                             <input type="checkbox" id="timerReminder" aria-label="Включить напоминание">
                             <span class="sl"></span>
@@ -257,11 +253,11 @@
         </div>
     </div>
 
-    <div class="modal" id="fModal" role="dialog" aria-modal="true" aria-label="Фильтры">
+    <div class="modal" id="fModal" role="dialog" aria-modal="true" aria-labelledby="fModalTitle">
         <div class="mc">
             <div class="mc-handle" aria-hidden="true"></div>
             <div class="mh">
-                <h2>Фильтры</h2>
+                <h2 id="fModalTitle">Фильтры</h2>
                 <button id="closeFModal" class="ibtn-s" aria-label="Закрыть" title="Закрыть"></button>
             </div>
             <div class="fg">
@@ -272,18 +268,17 @@
                         <option value="elapsed">Только «сколько прошло»</option>
                         <option value="countdown">Только «сколько осталось»</option>
                     </select>
-                    
                 </div>
             </div>
             <div class="fg">
                 <label for="sortSelect">Сортировка</label>
                 <div class="select-wrap">
                     <select id="sortSelect" aria-label="Порядок сортировки">
+                        <option value="order">Мой порядок</option>
                         <option value="created">Сначала новые</option>
                         <option value="date">По дате события</option>
                         <option value="name">По алфавиту</option>
                     </select>
-                    
                 </div>
             </div>
             <div class="fg">
@@ -298,7 +293,6 @@
                         <option value="study">Учёба</option>
                         <option value="travel">Путешествия</option>
                     </select>
-                    
                 </div>
             </div>
             <div class="fg">
@@ -319,11 +313,11 @@
         </div>
     </div>
 
-    <div class="modal" id="sModal" role="dialog" aria-modal="true" aria-label="Настройки">
+    <div class="modal" id="sModal" role="dialog" aria-modal="true" aria-labelledby="sModalTitle">
         <div class="mc">
             <div class="mc-handle" aria-hidden="true"></div>
             <div class="mh">
-                <h2 class="accent-text">Настройки</h2>
+                <h2 id="sModalTitle" class="accent-text">Настройки</h2>
                 <button id="closeSModal" class="ibtn-s" aria-label="Закрыть" title="Закрыть"></button>
             </div>
             <div class="sg">
@@ -340,7 +334,7 @@
                     </div>
                 </div>
                 <div class="sr">
-                    <span>Анимации</span>
+                    <label for="animToggle">Анимации</label>
                     <label class="sw">
                         <input type="checkbox" id="animToggle" checked aria-label="Включить анимации">
                         <span class="sl"></span>
@@ -363,19 +357,18 @@
                     <div class="about-ver" id="aboutVer"></div>
                     <p class="about-tag">Каждый день считается</p>
                 </div>
-                <p class="ai">ChronoFlow — минималистичный таймер для отслеживания времени. Считайте дни до важных событий или после них. Всё работает полностью офлайн, без регистрации и серверов.</p>
-                <p class="ai">Не курю 45 дней. До отпуска 128 дней. На новой работе уже 2 года. ChronoFlow превращает абстрактное понятие времени в наглядные цифры — и помогает не сбиться с пути.</p>
+                <p class="ai">ChronoFlow — офлайн-таймер для всего, что важно. Считайте дни до событий или после них. Ноль серверов, ноль регистрации — только вы и ваше время.</p>
                 <ul class="about-features">
                     <li>Два режима: «сколько прошло» и «сколько осталось»</li>
-                    <li>Визуальные часы с прогрессом дня и недели</li>
-                    <li>Категории: работа, здоровье, учёба, личное</li>
-                    <li>Напоминания о важных датах</li>
-                    <li>Свайп для быстрого удаления</li>
-                    <li>Свой цвет для каждого счётчика</li>
-                    <li>6 готовых шаблонов: от «Не курю» до «Накопления»</li>
-                    <li>Тёмная и светлая тема под системные настройки</li>
-                    <li>Экспорт и импорт — ваши данные всегда с вами</li>
-                    <li>Полностью офлайн — без серверов и регистрации</li>
+                    <li>G-SHOCK-стильные часы с прогрессом дня</li>
+                    <li>Категории: работа, здоровье, учёба, личное, путешествия</li>
+                    <li>Повторяющиеся счётчики: неделя, месяц, год</li>
+                    <li>Напоминания через уведомления</li>
+                    <li>Свайп и drag-and-drop для быстрого управления</li>
+                    <li>6 готовых шаблонов</li>
+                    <li>Тёмная и светлая тема</li>
+                    <li>Экспорт в JSON и изображение</li>
+                    <li>Полностью офлайн PWA</li>
                 </ul>
                 <p class="ai" style="margin-top:16px;font-style:italic;color:var(--t3)">«Время нельзя остановить. Но можно считать каждый день.»</p>
                 <div class="about-links">
@@ -404,7 +397,7 @@
     </div>
 
     <input type="file" id="importFile" accept=".json" class="hidden" aria-hidden="true">
-    <div class="notif" id="notif" role="alert" aria-live="assertive"></div>
+    <div class="notif toast" id="notif" role="alert" aria-live="assertive"></div>
     <script src="./version.js"></script>
     <script src="./app.js"></script>
 </body>

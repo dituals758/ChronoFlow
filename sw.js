@@ -3,7 +3,7 @@ importScripts('./version.js');
 var CACHE = 'cf-v' + APP_VERSION;
 var STATIC_CACHE = 'cf-static-v' + APP_VERSION;
 
-var ASSETS = ['./', './index.html', './styles.css', './app.js', './version.js', './manifest.json', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png'];
+var ASSETS = ['./', './index.html', './styles.css', './app.js', './version.js', './manifest.json', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png', './screen01.png', './screen02.png', './screen03.png'];
 
 self.addEventListener('install', function (e) {
     e.waitUntil(

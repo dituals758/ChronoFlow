@@ -13,7 +13,6 @@
         search: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
         filter: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M7 12h10M9 18h6"/></svg>',
         close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>',
-        edit: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg>',
         trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>',
         clock: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
         calendarPicker: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>',
@@ -31,13 +30,14 @@
     var timers = [];
     var editId = null;
     var filter = 'all';
-    var sortBy = 'created';
+    var sortBy = 'order';
     var categoryFilter = 'all';
     var searchQuery = '';
     var notifiedTimers = {};
     var prevDay = -1;
     var prevHour = -1;
     var lastTick = 0;
+    var _firstRenderDone = false;
     var anims = true;
     var selectedColor = DEFAULT_COLOR;
     var installPrompt = null;
@@ -50,6 +50,8 @@
 
     var svgDayDots;
     var svgDayEls = [];
+    var _ringBgs = null;
+    var _pageVisible = true;
     var isTouch = window.matchMedia('(pointer: coarse)').matches;
 
     var el = {};
@@ -137,11 +139,15 @@
         var aboutVer = document.getElementById('aboutVer');
         if (aboutVer && typeof APP_VERSION !== 'undefined') aboutVer.textContent = 'v' + APP_VERSION;
         initClockSvg();
+        _ringBgs = document.querySelectorAll('.ring-bg');
         loadSettings();
         loadTimers();
         bindEvents();
         tick(performance.now());
-        requestAnimationFrame(function tickSvg() { updateClockSvg(); requestAnimationFrame(tickSvg); });
+        requestAnimationFrame(function tickSvg() {
+            if (_pageVisible) updateClockSvg();
+            requestAnimationFrame(tickSvg);
+        });
         render();
         initScroll();
         initKeyboard();
@@ -149,6 +155,10 @@
         hideSplash();
         var sh = document.querySelector('.section-hdr');
         if (sh && timers.length === 0) sh.classList.add('shifted');
+        if (location.search.indexOf('action=add') !== -1) {
+            history.replaceState(null, '', location.pathname);
+            setTimeout(openModal, 600);
+        }
     }
 
     var SVG_NS = 'http://www.w3.org/2000/svg';
@@ -166,6 +176,7 @@
     var MONTHS_SHORT = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
 
     function lightenHex(hex, pct) {
+        if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return hex || DEFAULT_COLOR;
         var r = parseInt(hex.slice(1, 3), 16);
         var g = parseInt(hex.slice(3, 5), 16);
         var b = parseInt(hex.slice(5, 7), 16);
@@ -264,9 +275,10 @@
         if (svgDayGradStop2) svgDayGradStop2.setAttribute('stop-color', lightenHex(dayColor, 0.25));
 
         // Ring backgrounds
-        var ringBgs = document.querySelectorAll('.ring-bg');
-        for (var r = 0; r < ringBgs.length; r++) {
-            ringBgs[r].style.stroke = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+        if (_ringBgs) {
+            for (var r = 0; r < _ringBgs.length; r++) {
+                _ringBgs[r].style.stroke = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+            }
         }
 
         // Day dots
@@ -325,7 +337,7 @@
                 sortBy: sortBy,
                 categoryFilter: categoryFilter
             }));
-        } catch (e) { }
+        } catch (e) { notify('Ошибка сохранения настроек', 'error'); }
     }
 
     function applyTheme(t) {
@@ -334,21 +346,33 @@
         else if (t === 'system' && window.matchMedia('(prefers-color-scheme:light)').matches) document.body.classList.add('lt');
     }
 
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function () {
+        var s = JSON.parse(localStorage.getItem(STORAGE_SETTINGS) || '{}');
+        if ((s.theme || 'system') === 'system') applyTheme('system');
+    });
+
     function applyAnimPref() {
         if (!anims) document.body.classList.add('no-anim');
         else document.body.classList.remove('no-anim');
     }
 
     function loadTimers() {
-        try { timers = JSON.parse(localStorage.getItem(STORAGE_TIMERS) || '[]'); } catch (e) { timers = []; }
+        try {
+            var raw = localStorage.getItem(STORAGE_TIMERS);
+            if (!raw) { timers = []; return; }
+            var parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) { timers = []; return; }
+            timers = parsed.filter(function (t) { return t && typeof t === 'object' && typeof t.id === 'string' && typeof t.title === 'string' && typeof t.date === 'number'; });
+        } catch (e) { timers = []; }
     }
 
     function saveTimers() {
-        try { localStorage.setItem(STORAGE_TIMERS, JSON.stringify(timers)); } catch (e) { }
+        try { localStorage.setItem(STORAGE_TIMERS, JSON.stringify(timers)); } catch (e) { notify('Ошибка сохранения данных', 'error'); }
     }
 
     function genId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, '').slice(0, 20);
+        return Date.now().toString(36) + Math.random().toString(36).substring(2, 10);
     }
 
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -465,10 +489,10 @@
     var REC_NAMES = { weekly: 'Еженед.', monthly: 'Ежемес.', yearly: 'Ежегод.' };
     var TPL_DATA = {
         sobriety: { title: 'Не курю', type: 'elapsed', color: '#30d158', category: 'health', recurring: '', reminder: false },
-        work: { title: 'На работе уже', type: 'elapsed', color: '#0a84ff', category: 'work', recurring: '', reminder: false },
+        work: { title: 'На работе', type: 'elapsed', color: '#0a84ff', category: 'work', recurring: '', reminder: false },
         vacation: { title: 'До отпуска', type: 'countdown', color: '#ff8c00', category: 'travel', recurring: '', reminder: true },
         language: { title: 'Изучение языка', type: 'elapsed', color: '#bf5af2', category: 'study', recurring: '', reminder: false },
-        fitness: { title: 'Фитнес streak', type: 'elapsed', color: '#ff6b6b', category: 'health', recurring: '', reminder: false },
+        fitness: { title: 'Фитнес streak', type: 'elapsed', color: '#ff6b6b', category: 'health', recurring: 'weekly', reminder: false },
         savings: { title: 'Накопления', type: 'elapsed', color: '#5cd66e', category: 'personal', recurring: '', reminder: false }
     };
 
@@ -510,7 +534,12 @@
             if (now.getTime() > t.date) {
                 var d = new Date(t.date);
                 if (t.recurring === 'weekly') d.setDate(d.getDate() + 7);
-                else if (t.recurring === 'monthly') d.setMonth(d.getMonth() + 1);
+                else if (t.recurring === 'monthly') {
+                    var day = t.originalDay || d.getDate();
+                    d.setDate(1);
+                    d.setMonth(d.getMonth() + 1);
+                    d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()));
+                }
                 else if (t.recurring === 'yearly') d.setFullYear(d.getFullYear() + 1);
                 t.date = d.getTime();
                 changed = true;
@@ -542,7 +571,7 @@
         }
         c.fillStyle = '#000'; c.fillRect(0, 0, 800, 600);
         var grad = c.createLinearGradient(0, 0, 800, 600);
-        grad.addColorStop(0, '#0a84ff'); grad.addColorStop(1, '#bf5af2');
+        grad.addColorStop(0, '#0a84ff'); grad.addColorStop(1, '#5e5ce6');
         c.fillStyle = grad; c.globalAlpha = 0.15; c.fillRect(0, 0, 800, 600); c.globalAlpha = 1;
         c.fillStyle = '#fff'; c.font = '700 36px -apple-system, sans-serif'; c.textAlign = 'center';
         c.fillText('ChronoFlow', 400, 60);
@@ -599,20 +628,28 @@
         return { parts: diffToParts(Math.abs(diff)), negative: negative };
     }
 
+    function calcDateParts(totalDays) {
+        var ref = new Date(2000, 0, 1);
+        var end = new Date(ref.getTime() + totalDays * 86400000);
+        var y = end.getFullYear() - ref.getFullYear();
+        var mo = end.getMonth() - ref.getMonth();
+        var dd = end.getDate() - ref.getDate();
+        if (dd < 0) { mo--; dd += new Date(end.getFullYear(), end.getMonth(), 0).getDate(); }
+        if (mo < 0) { y--; mo += 12; }
+        return { y: y, mo: mo, dd: dd };
+    }
+
     function fmtCounter(timestamp, type) {
         var p = parseDiff(timestamp, type);
         var d = p.parts;
-        var remDy = d.dy;
-        var y = Math.floor(remDy / 365); remDy -= y * 365;
-        var mo = Math.floor(remDy / 30.44); remDy -= Math.floor(mo * 30.44);
-        var dd = Math.floor(remDy);
+        var dp = calcDateParts(d.dy);
         var rh = d.hr % 24;
         var rm = d.mn % 60;
         var rs = d.sc % 60;
         var parts = [];
-        if (y > 0) parts.push(declension(y, ['год', 'года', 'лет']));
-        if (mo > 0) parts.push(declension(mo, ['месяц', 'месяца', 'месяцев']));
-        if (dd > 0) parts.push(declension(dd, ['день', 'дня', 'дней']));
+        if (dp.y > 0) parts.push(declension(dp.y, ['год', 'года', 'лет']));
+        if (dp.mo > 0) parts.push(declension(dp.mo, ['месяц', 'месяца', 'месяцев']));
+        if (dp.dd > 0) parts.push(declension(dp.dd, ['день', 'дня', 'дней']));
         if (rh > 0) parts.push(declension(rh, ['час', 'часа', 'часов']));
         if (rm > 0 || parts.length > 0) parts.push(declension(rm, ['минуту', 'минуты', 'минут']));
         parts.push(declension(rs, ['секунду', 'секунды', 'секунд']));
@@ -646,7 +683,7 @@
             filtered.sort(function (a, b) { return a.title.localeCompare(b.title, 'ru'); });
         } else if (sortBy === 'date') {
             filtered.sort(function (a, b) { return a.date - b.date; });
-        } else {
+        } else if (sortBy === 'created') {
             filtered.sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
         }
 
@@ -671,7 +708,6 @@
 
             var card = document.createElement('div');
             card.className = 'tc-card';
-            card.style.setProperty('--card-color', t.color || DEFAULT_COLOR);
             card.dataset.id = t.id;
             card.setAttribute('role', 'listitem');
             card.setAttribute('draggable', 'true');
@@ -682,11 +718,11 @@
             var typeClass = isElapsed ? 'elapsed' : 'countdown';
             var catLabel = '';
             if (t.category && CAT_NAMES[t.category]) {
-                catLabel = '<span class="cat-tag ' + t.category + '">' + CAT_NAMES[t.category] + '</span>';
+                catLabel = '<span class="badge cat-tag ' + t.category + '">' + CAT_NAMES[t.category] + '</span>';
             }
             var recurringLabel = '';
             if (t.recurring && REC_NAMES[t.recurring]) {
-                recurringLabel = '<span class="recurring-badge">' + REC_NAMES[t.recurring] + '</span>';
+                recurringLabel = '<span class="badge recurring-badge">' + REC_NAMES[t.recurring] + '</span>';
             }
 
             card.innerHTML =
@@ -704,7 +740,7 @@
                                 '<button class="ibtn-s dl" data-id="' + t.id + '" title="Удалить" aria-label="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>' +
                             '</div>' +
                         '</div>' +
-                        '<div class="tc-badges">' + catLabel + recurringLabel + '<span class="tc-type ' + typeClass + '">' + typeLabel + '</span></div>' +
+                        '<div class="tc-badges">' + catLabel + recurringLabel + '<span class="badge tc-type ' + typeClass + '">' + typeLabel + '</span></div>' +
                         '<div class="tc-counter"><div class="tc-counter-val" data-ts="' + t.date + '" data-type="' + t.type + '" style="color:' + t.color + '"></div></div>' +
                         '<div class="tc-date"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' + dateStr + '</div>' +
                     '</div>' +
@@ -715,6 +751,11 @@
 
         list.innerHTML = '';
         list.appendChild(frag);
+        if (!_firstRenderDone) _firstRenderDone = true;
+        else {
+            var cards = list.querySelectorAll('.tc-card');
+            for (var c = 0; c < cards.length; c++) cards[c].classList.add('no-anim');
+        }
     }
 
     function openModal() {
@@ -738,12 +779,9 @@
     }
 
     function closeModal() {
-        el.timerModal.classList.remove('show');
+        dismissModal(el.timerModal);
         var hslPopup = document.getElementById('hslPopup');
         if (hslPopup) hslPopup.classList.remove('show');
-        releaseFocus();
-        if (lastFocus) lastFocus.focus();
-        history.back();
     }
 
     function saveTimer(more) {
@@ -765,6 +803,12 @@
         }
 
         var timestamp = new Date(dateVal).getTime();
+        if (isNaN(timestamp)) {
+            el.timerDate.classList.add('error');
+            notify('Некорректная дата', 'error');
+            setTimeout(function () { el.timerDate.classList.remove('error'); }, 500);
+            return;
+        }
 
         if (editId) {
             var idx = timers.findIndex(function (x) { return x.id === editId; });
@@ -776,10 +820,11 @@
                 timers[idx].category = el.timerCategory ? el.timerCategory.value : '';
                 timers[idx].recurring = el.timerRecurring ? el.timerRecurring.value : '';
                 timers[idx].reminder = el.timerReminder ? el.timerReminder.checked : false;
+                timers[idx].originalDay = new Date(dateVal).getDate();
             }
             notify('Обновлено');
         } else {
-            timers.push({ id: genId(), title: title, date: timestamp, type: type, color: selectedColor, created: Date.now(), category: el.timerCategory ? el.timerCategory.value : '', recurring: el.timerRecurring ? el.timerRecurring.value : '', reminder: el.timerReminder ? el.timerReminder.checked : false });
+            timers.push({ id: genId(), title: title, date: timestamp, type: type, color: selectedColor, created: Date.now(), category: el.timerCategory ? el.timerCategory.value : '', recurring: el.timerRecurring ? el.timerRecurring.value : '', reminder: el.timerReminder ? el.timerReminder.checked : false, originalDay: new Date(dateVal).getDate() });
             notify('Добавлено');
         }
 
@@ -796,7 +841,6 @@
             closeModal();
         }
         render();
-        
     }
 
     function editTimer(id) {
@@ -837,20 +881,18 @@
             setTimeout(function () {
                 var freshIdx = timers.findIndex(function (x) { return x.id === id; });
                 if (freshIdx === -1) return;
-                lastDel = { timer: timers[freshIdx], index: freshIdx };
+                lastDel = { timer: timers[freshIdx] };
                 timers.splice(freshIdx, 1);
                 saveTimers();
                 render();
                 showUndo();
-                
             }, 300);
         } else {
-            lastDel = { timer: timer, index: idx };
+            lastDel = { timer: timer };
             timers.splice(idx, 1);
             saveTimers();
             render();
             showUndo();
-            
         }
     }
 
@@ -859,7 +901,7 @@
         if (!t) {
             t = document.createElement('div');
             t.id = 'undoToast';
-            t.className = 'undo-toast';
+            t.className = 'toast undo-toast';
             t.innerHTML = '<span>Удалено</span><button class="undo-btn" id="undoBtn">Отменить</button>';
             document.body.appendChild(t);
             document.getElementById('undoBtn').onclick = undo;
@@ -871,14 +913,18 @@
 
     function undo() {
         if (!lastDel) return;
-        timers.splice(lastDel.index, 0, lastDel.timer);
+        var existingIdx = timers.findIndex(function (x) { return x.id === lastDel.timer.id; });
+        if (existingIdx !== -1) {
+            timers[existingIdx] = lastDel.timer;
+        } else {
+            timers.push(lastDel.timer);
+        }
         lastDel = null;
         clearTimeout(undoTimer);
         var t = document.getElementById('undoToast');
         if (t) t.classList.remove('show');
         saveTimers();
         render();
-        
         haptic('light');
         notify('Восстановлено');
     }
@@ -892,12 +938,10 @@
         m.classList.add('show');
         trapFocus(m);
         $('confirmOk').onclick = function () {
-            m.classList.remove('show'); releaseFocus();
-            if (lastFocus) lastFocus.focus(); cb();
+            dismissModal(m); cb();
         };
         $('confirmCancel').onclick = function () {
-            m.classList.remove('show'); releaseFocus();
-            if (lastFocus) lastFocus.focus();
+            dismissModal(m);
         };
     }
 
@@ -927,10 +971,13 @@
                 var valid = data.filter(function (x) { return x && typeof x.title === 'string' && typeof x.date === 'number'; });
                 if (!valid.length) throw 0;
                 showConfirm('Импорт', 'Импортировать ' + valid.length + ' счётчиков?', 'Импортировать', function () {
-                    timers = timers.concat(valid);
-                    saveTimers(); render(); 
+                    var existingIds = {};
+                    for (var i = 0; i < timers.length; i++) existingIds[timers[i].id] = true;
+                    var newTimers = valid.filter(function (x) { return !existingIds[x.id]; });
+                    timers = timers.concat(newTimers);
+                    saveTimers(); render();
                     haptic('success');
-                    notify('Импортировано ' + valid.length);
+                    notify('Импортировано ' + newTimers.length + (newTimers.length < valid.length ? ' (дубликаты пропущены)' : ''));
                 });
             } catch (err) { notify('Ошибка формата', 'error'); }
         };
@@ -996,9 +1043,7 @@
     }
 
     function closeSettings() {
-        el.sModal.classList.remove('show');
-        releaseFocus();
-        if (lastFocus) lastFocus.focus();
+        dismissModal(el.sModal);
     }
 
     var _scrollRaf = null;
@@ -1078,9 +1123,17 @@
         if (focusTrap) { document.removeEventListener('keydown', focusTrap); focusTrap = null; }
     }
 
+    function dismissModal(m) {
+        m.classList.remove('show');
+        releaseFocus();
+        if (lastFocus) lastFocus.focus();
+    }
+
     function initKeyboard() {
         document.addEventListener('keydown', function (e) {
             if (document.querySelector('.modal.show')) return;
+            var tag = document.activeElement ? document.activeElement.tagName : '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
             if (e.key === 'n' || e.key === 'N') {
                 if (e.ctrlKey || e.metaKey) return;
                 e.preventDefault();
@@ -1111,8 +1164,8 @@
     function bindEvents() {
         if (el.addFirstBtn) el.addFirstBtn.onclick = openModal;
         if (el.addTimerBtn) el.addTimerBtn.onclick = function () { haptic('light'); openModal(); };
-        if (el.closeModal) el.closeModal.onclick = closeModal;
-        if (el.cancelBtn) el.cancelBtn.onclick = closeModal;
+        if (el.closeModal) el.closeModal.onclick = function () { closeModal(); history.back(); };
+        if (el.cancelBtn) el.cancelBtn.onclick = function () { closeModal(); history.back(); };
         if (el.timerForm) el.timerForm.onsubmit = function (e) { e.preventDefault(); saveTimer(); };
         if (el.saveMoreBtn) el.saveMoreBtn.onclick = function () { saveTimer(true); };
         if (el.timerTitle) el.timerTitle.oninput = function () {
@@ -1152,9 +1205,6 @@
             hslLVal.textContent = l;
             var hex = hslToHex(h, s, l);
             if (hslPreview) hslPreview.style.background = hex;
-            hslH.style.setProperty('--range-color', 'hsl(' + h + ',' + s + '%,' + l + '%)');
-            hslS.style.setProperty('--range-color', 'hsl(' + h + ',' + s + '%,' + l + '%)');
-            hslL.style.setProperty('--range-color', 'hsl(' + h + ',' + s + '%,' + l + '%)');
         }
 
         function openHslPopup(color) {
@@ -1193,27 +1243,23 @@
 
         var filterBtn = $('filterBtn');
         if (filterBtn) filterBtn.onclick = function () {
+            if (el.sortSelect) el.sortSelect.value = sortBy;
+            if (el.catSelect) el.catSelect.value = categoryFilter;
             var fs = $('fSelect');
-            var ss = $('sortSelect');
-            var cs = $('catSelect');
             if (fs) fs.value = filter;
-            if (ss) ss.value = sortBy;
-            if (cs) cs.value = categoryFilter;
             el.fModal.classList.add('show');
             trapFocus(el.fModal);
         };
 
         var closeFModal = $('closeFModal');
-        if (closeFModal) closeFModal.onclick = function () { el.fModal.classList.remove('show'); releaseFocus(); if (lastFocus) lastFocus.focus(); };
+        if (closeFModal) closeFModal.onclick = function () { el.fModal.classList.remove('show'); releaseFocus(); if (lastFocus) lastFocus.focus(); history.back(); };
 
         var applyFBtn = $('applyFBtn');
         if (applyFBtn) applyFBtn.onclick = function () {
             var fs = $('fSelect');
-            var ss = $('sortSelect');
-            var cs = $('catSelect');
             if (fs) filter = fs.value;
-            if (ss) sortBy = ss.value;
-            if (cs) categoryFilter = cs.value;
+            if (el.sortSelect) sortBy = el.sortSelect.value;
+            if (el.catSelect) categoryFilter = el.catSelect.value;
             saveSettings();
             el.fModal.classList.remove('show');
             releaseFocus();
@@ -1308,7 +1354,6 @@
                 timers = [];
                 saveTimers();
                 render();
-                
                 notify('Очищено');
             });
         };
@@ -1338,7 +1383,7 @@
         }
 
         var closeSModal = $('closeSModal');
-        if (closeSModal) closeSModal.onclick = function () { closeSettings(); };
+        if (closeSModal) closeSModal.onclick = function () { closeSettings(); history.back(); };
 
         if (el.importFile) el.importFile.onchange = handleImport;
 
@@ -1469,10 +1514,9 @@
         document.querySelectorAll('.modal').forEach(function (m) {
             m.onclick = function (e) {
                 if (e.target === m) {
-                    m.classList.remove('show');
-                    releaseFocus();
-                    if (lastFocus) lastFocus.focus();
+                    dismissModal(m);
                     if (m === el.sModal) closeSettings();
+                    else history.back();
                 }
             };
         });
@@ -1481,10 +1525,8 @@
             if (e.key === 'Escape') {
                 var ms = document.querySelectorAll('.modal.show');
                 if (ms.length) {
-                    ms.forEach(function (m) { m.classList.remove('show'); });
-                    releaseFocus();
-                    if (lastFocus) lastFocus.focus();
-                    if (el.sModal && !el.sModal.classList.contains('show')) closeSettings();
+                    ms.forEach(function (m) { dismissModal(m); });
+                    history.back();
                 }
             }
         };
@@ -1493,9 +1535,7 @@
             if (!e.state || !e.state.modal) {
                 var ms = document.querySelectorAll('.modal.show');
                 if (ms.length) {
-                    ms.forEach(function (m) { m.classList.remove('show'); });
-                    releaseFocus();
-                    if (lastFocus) lastFocus.focus();
+                    ms.forEach(function (m) { dismissModal(m); });
                 }
             }
         };
@@ -1517,21 +1557,27 @@
         if (el.installBtn) el.installBtn.classList.remove('hidden');
     });
 
-    if (el.installBtn) el.installBtn.onclick = function () {
-        if (!installPrompt) return;
-        installPrompt.prompt();
-        installPrompt.userChoice.then(function (r) {
-            if (r.outcome === 'accepted') {
-                installPrompt = null;
-                el.installBtn.classList.add('hidden');
-            }
-        });
-    };
-
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', function () {
+            init();
+            bindInstallBtn();
+        });
     } else {
         init();
+        bindInstallBtn();
+    }
+
+    function bindInstallBtn() {
+        if (el.installBtn) el.installBtn.onclick = function () {
+            if (!installPrompt) return;
+            installPrompt.prompt();
+            installPrompt.userChoice.then(function (r) {
+                if (r.outcome === 'accepted') {
+                    installPrompt = null;
+                    el.installBtn.classList.add('hidden');
+                }
+            });
+        };
     }
 
     function initCardSwipe() {
@@ -1690,7 +1736,6 @@
                 if (svg) svg.style.transform = '';
                 setTimeout(function () {
                     render();
-                    
                     indicator.classList.remove('active', 'refreshing');
                     indicator.style.height = '';
                     indicator.style.opacity = '';
@@ -1746,9 +1791,7 @@
 
                 if (dy > 120) {
                     haptic('medium');
-                    modal.classList.remove('show');
-                    releaseFocus();
-                    if (lastFocus) lastFocus.focus();
+                    dismissModal(modal);
                     if (modal === el.sModal) closeSettings();
                     history.back();
                 }
@@ -1767,15 +1810,13 @@
 
     var _pausedAt = null;
     document.addEventListener('visibilitychange', function () {
+        _pageVisible = !document.hidden;
         if (document.hidden) {
             _pausedAt = Date.now();
         } else {
             if (_pausedAt) {
                 var gap = Date.now() - _pausedAt;
-                if (gap > 5000) {
-                    render();
-                    
-                }
+                if (gap > 5000) render();
                 _pausedAt = null;
             }
         }
@@ -1784,10 +1825,7 @@
     window.addEventListener('focus', function () {
         if (_pausedAt) {
             var gap = Date.now() - _pausedAt;
-            if (gap > 5000) {
-                render();
-                
-            }
+            if (gap > 5000) render();
             _pausedAt = null;
         }
     });
@@ -1805,13 +1843,10 @@
                         indicator.style.opacity = '1';
                         setTimeout(function () {
                             render();
-                            
                             indicator.classList.remove('active', 'refreshing');
                             indicator.style.height = '';
                             indicator.style.opacity = '';
-            notify('Готово!');
-
-
+                            notify('Обновлено');
                         }, 600);
                     }
                     _wheelTimer = null;
