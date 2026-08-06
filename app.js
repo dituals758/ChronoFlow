@@ -25,6 +25,7 @@
 
     var STORAGE_TIMERS = 'timeflow_timers';
     var STORAGE_SETTINGS = 'timeflow_settings';
+    var STORAGE_NOTIFIED = 'timeflow_notified';
     var MAX_TITLE = 50;
 
     var timers = [];
@@ -45,14 +46,13 @@
     var lastFocus = null;
     var dragSrcId = null;
     var touchDragCard = null;
-    var touchLongPress = null;
     var touchClone = null;
 
     var svgDayDots;
     var svgDayEls = [];
     var _ringBgs = null;
     var _pageVisible = true;
-    var isTouch = window.matchMedia('(pointer: coarse)').matches;
+    var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
     var el = {};
 
@@ -91,6 +91,7 @@
         el.timerReminder = $('timerReminder');
         el.catSelect = $('catSelect');
         el.sortSelect = $('sortSelect');
+        el.filterBtn = $('filterBtn');
     }
 
     function injectIcons() {
@@ -142,6 +143,7 @@
         _ringBgs = document.querySelectorAll('.ring-bg');
         loadSettings();
         loadTimers();
+        loadNotified();
         bindEvents();
         tick(performance.now());
         requestAnimationFrame(function tickSvg() {
@@ -159,6 +161,7 @@
             history.replaceState(null, '', location.pathname);
             setTimeout(openModal, 600);
         }
+        updateFilterButtonState();
     }
 
     var SVG_NS = 'http://www.w3.org/2000/svg';
@@ -203,7 +206,6 @@
             svgDayRingFill.style.strokeDashoffset = DAY_RING_CIRCUMFERENCE;
         }
 
-        // Day dots
         svgDayDots.innerHTML = '';
         svgDayEls = [];
         var dotR = 65;
@@ -221,7 +223,6 @@
             svgDayEls.push(dot);
         }
 
-        // Tick marks for seconds
         var ticksGroup = document.getElementById('svgTicks');
         if (ticksGroup) {
             ticksGroup.innerHTML = '';
@@ -257,15 +258,13 @@
         var dayColor = COLORS[dayIndex];
         var isLight = document.body.classList.contains('lt');
 
-        // Seconds ring
-        var secProgress = (s + ms / 1000) / 60;
         if (svgRingEl) {
+            var secProgress = (s + ms / 1000) / 60;
             svgRingEl.style.strokeDashoffset = SEC_RING_CIRCUMFERENCE * (1 - secProgress);
         }
         if (svgRingGradStop1) svgRingGradStop1.setAttribute('stop-color', dayColor);
         if (svgRingGradStop2) svgRingGradStop2.setAttribute('stop-color', lightenHex(dayColor, 0.3));
 
-        // Day progress ring (24h)
         var dayMs = h * 3600000 + m * 60000 + s * 1000 + ms;
         var dayProgress = dayMs / 86400000;
         if (svgDayRingFill) {
@@ -274,14 +273,12 @@
         if (svgDayGradStop1) svgDayGradStop1.setAttribute('stop-color', dayColor);
         if (svgDayGradStop2) svgDayGradStop2.setAttribute('stop-color', lightenHex(dayColor, 0.25));
 
-        // Ring backgrounds
         if (_ringBgs) {
             for (var r = 0; r < _ringBgs.length; r++) {
                 _ringBgs[r].style.stroke = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
             }
         }
 
-        // Day dots
         for (var i = 0; i < svgDayEls.length; i++) {
             var isActive = i === dayIndex;
             svgDayEls[i].setAttribute('r', isActive ? '4' : '2.5');
@@ -289,18 +286,15 @@
             svgDayEls[i].style.filter = isActive ? 'url(#dotGlow)' : 'none';
         }
 
-        // SVG text elements
         var svgDay = document.getElementById('svgDay');
         var svgTime = document.getElementById('svgTime');
         var svgSec = document.getElementById('svgSec');
         var svgDate = document.getElementById('svgDate');
-
         if (svgDay) svgDay.textContent = DAYS_SHORT_RU[dayIndex];
         if (svgTime) svgTime.textContent = pad(h) + ':' + pad(m);
         if (svgSec) svgSec.textContent = pad(s);
         if (svgDate) svgDate.textContent = now.getDate() + ' ' + MONTHS_SHORT[now.getMonth()];
 
-        // Time of day badge
         var svgSt = document.getElementById('svgSt');
         if (svgSt) {
             var isWeekend = dayIndex >= 5;
@@ -325,6 +319,7 @@
             if (s.anims === false) { anims = false; if (el.animToggle) el.animToggle.checked = false; }
             if (s.sortBy) sortBy = s.sortBy;
             if (s.categoryFilter) categoryFilter = s.categoryFilter;
+            if (s.filter) filter = s.filter;
             applyAnimPref();
         } catch (e) { }
     }
@@ -335,9 +330,24 @@
                 theme: el.themeSel ? el.themeSel.value : 'system',
                 anims: el.animToggle ? el.animToggle.checked : true,
                 sortBy: sortBy,
-                categoryFilter: categoryFilter
+                categoryFilter: categoryFilter,
+                filter: filter
             }));
         } catch (e) { notify('Ошибка сохранения настроек', 'error'); }
+    }
+
+    function loadNotified() {
+        try {
+            var data = localStorage.getItem(STORAGE_NOTIFIED);
+            if (data) notifiedTimers = JSON.parse(data);
+            else notifiedTimers = {};
+        } catch (e) { notifiedTimers = {}; }
+    }
+
+    function saveNotified() {
+        try {
+            localStorage.setItem(STORAGE_NOTIFIED, JSON.stringify(notifiedTimers));
+        } catch (e) { /* игнорируем */ }
     }
 
     function applyTheme(t) {
@@ -512,18 +522,22 @@
 
     function checkNotifications(now) {
         var ts = now.getTime();
+        var changed = false;
         for (var i = 0; i < timers.length; i++) {
             var t = timers[i];
             if (t.type !== 'countdown' || !t.reminder) continue;
             var diff = t.date - ts;
             if (diff > 0 && diff < 86400000 && !notifiedTimers[t.id]) {
                 notifiedTimers[t.id] = true;
+                changed = true;
                 sendNotification('ChronoFlow', t.title + ' — завтра!');
             } else if (diff <= 0 && diff > -3600000 && !notifiedTimers[t.id + '_done']) {
                 notifiedTimers[t.id + '_done'] = true;
+                changed = true;
                 sendNotification('ChronoFlow', t.title + ' наступил!');
             }
         }
+        if (changed) saveNotified();
     }
 
     function checkRecurring(now) {
@@ -548,69 +562,38 @@
         if (changed) { saveTimers(); render(); }
     }
 
-    function exportImage() {
-        var card = el.timerList.querySelector('.tc-card');
-        if (!card) { notify('Нет счётчиков', 'error'); return; }
-        var cvs = document.createElement('canvas');
-        cvs.width = 800; cvs.height = 600;
-        var c = cvs.getContext('2d');
-        if (!c.roundRect) {
-            CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-                if (typeof r === 'number') r = [r, r, r, r];
-                this.moveTo(x + r[0], y);
-                this.lineTo(x + w - r[1], y);
-                this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
-                this.lineTo(x + w, y + h - r[2]);
-                this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
-                this.lineTo(x + r[3], y + h);
-                this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
-                this.lineTo(x, y + r[0]);
-                this.quadraticCurveTo(x, y, x + r[0], y);
-                this.closePath();
-            };
-        }
-        c.fillStyle = '#000'; c.fillRect(0, 0, 800, 600);
-        var grad = c.createLinearGradient(0, 0, 800, 600);
-        grad.addColorStop(0, '#0a84ff'); grad.addColorStop(1, '#5e5ce6');
-        c.fillStyle = grad; c.globalAlpha = 0.15; c.fillRect(0, 0, 800, 600); c.globalAlpha = 1;
-        c.fillStyle = '#fff'; c.font = '700 36px -apple-system, sans-serif'; c.textAlign = 'center';
-        c.fillText('ChronoFlow', 400, 60);
-        c.font = '400 16px -apple-system, sans-serif'; c.fillStyle = 'rgba(255,255,255,0.6)';
-        c.fillText(new Date().toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' }), 400, 90);
-        var items = el.timerList.querySelectorAll('.tc-card');
-        var y = 130;
-        var count = Math.min(items.length, 8);
-        for (var i = 0; i < count; i++) {
-            var el2 = items[i].querySelector('.tc-counter-val');
-            var titleEl = items[i].querySelector('.tc-title');
-            var typeEl = items[i].querySelector('.tc-type');
-            if (!el2 || !titleEl) continue;
-            c.fillStyle = 'rgba(255,255,255,0.08)';
-            c.beginPath(); c.roundRect(40, y, 720, 50, 12); c.fill();
-            c.fillStyle = '#fff'; c.font = '600 15px -apple-system, sans-serif'; c.textAlign = 'left';
-            c.fillText(titleEl.textContent, 60, y + 22);
-            c.fillStyle = el2.style.color || '#fff'; c.font = '300 18px monospace'; c.textAlign = 'right';
-            c.fillText(el2.textContent, 740, y + 28);
-            if (typeEl) {
-                c.fillStyle = 'rgba(255,255,255,0.4)'; c.font = '600 10px -apple-system, sans-serif';
-                c.fillText(typeEl.textContent, 740, y + 44);
-            }
-            y += 58;
-        }
-        cvs.toBlob(function (blob) {
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url; a.download = 'chronoflow-' + new Date().toISOString().slice(0, 10) + '.png';
-            a.click(); URL.revokeObjectURL(url);
-            haptic('success'); notify('Изображение сохранено');
-        });
-    }
+    function fmtCounter(timestamp, type) {
+        var now = Date.now();
+        var diff = type === 'countdown' ? timestamp - now : now - timestamp;
+        var negative = diff < 0;
+        var absDiff = Math.abs(diff);
 
-    function declension(value, forms) {
-        value = Math.abs(value);
-        var n = value % 100;
-        var idx = (n >= 5 && n <= 20) ? 2 : (n % 10 === 1) ? 0 : (n % 10 >= 2 && n % 10 <= 4) ? 1 : 2;
-        return value + ' ' + forms[idx];
+        if (type === 'elapsed' && negative) {
+            return 'Ещё не наступило';
+        }
+
+        var parts = diffToParts(absDiff);
+        var d = parts;
+        var dp = calcDateParts(d.dy);
+        var rh = d.hr % 24;
+        var rm = d.mn % 60;
+        var rs = d.sc % 60;
+
+        var resultParts = [];
+        if (dp.y > 0) resultParts.push(declension(dp.y, ['год', 'года', 'лет']));
+        if (dp.mo > 0) resultParts.push(declension(dp.mo, ['месяц', 'месяца', 'месяцев']));
+        if (dp.dd > 0) resultParts.push(declension(dp.dd, ['день', 'дня', 'дней']));
+        if (rh > 0) resultParts.push(declension(rh, ['час', 'часа', 'часов']));
+        if (rm > 0) resultParts.push(declension(rm, ['минуту', 'минуты', 'минут']));
+        if (rs > 0 || resultParts.length === 0) {
+            resultParts.push(declension(rs, ['секунду', 'секунды', 'секунд']));
+        }
+
+        var result = resultParts.join(' ');
+        if (type === 'countdown' && negative) {
+            result += ' назад';
+        }
+        return result;
     }
 
     function diffToParts(diff) {
@@ -619,13 +602,6 @@
         var hr = Math.floor(mn / 60);
         var dy = Math.floor(hr / 24);
         return { sc: sc, mn: mn, hr: hr, dy: dy };
-    }
-
-    function parseDiff(timestamp, type) {
-        var now = Date.now();
-        var diff = type === 'countdown' ? timestamp - now : now - timestamp;
-        var negative = diff < 0;
-        return { parts: diffToParts(Math.abs(diff)), negative: negative };
     }
 
     function calcDateParts(totalDays) {
@@ -639,22 +615,11 @@
         return { y: y, mo: mo, dd: dd };
     }
 
-    function fmtCounter(timestamp, type) {
-        var p = parseDiff(timestamp, type);
-        var d = p.parts;
-        var dp = calcDateParts(d.dy);
-        var rh = d.hr % 24;
-        var rm = d.mn % 60;
-        var rs = d.sc % 60;
-        var parts = [];
-        if (dp.y > 0) parts.push(declension(dp.y, ['год', 'года', 'лет']));
-        if (dp.mo > 0) parts.push(declension(dp.mo, ['месяц', 'месяца', 'месяцев']));
-        if (dp.dd > 0) parts.push(declension(dp.dd, ['день', 'дня', 'дней']));
-        if (rh > 0) parts.push(declension(rh, ['час', 'часа', 'часов']));
-        if (rm > 0 || parts.length > 0) parts.push(declension(rm, ['минуту', 'минуты', 'минут']));
-        parts.push(declension(rs, ['секунду', 'секунды', 'секунд']));
-        if (p.negative && type === 'countdown') return parts.join(' ') + ' назад';
-        return parts.join(' ');
+    function declension(value, forms) {
+        value = Math.abs(value);
+        var n = value % 100;
+        var idx = (n >= 5 && n <= 20) ? 2 : (n % 10 === 1) ? 0 : (n % 10 >= 2 && n % 10 <= 4) ? 1 : 2;
+        return value + ' ' + forms[idx];
     }
 
     function render() {
@@ -686,6 +651,8 @@
         } else if (sortBy === 'created') {
             filtered.sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
         }
+
+        updateFilterButtonState();
 
         if (filtered.length === 0) {
             list.innerHTML = '';
@@ -755,6 +722,18 @@
         else {
             var cards = list.querySelectorAll('.tc-card');
             for (var c = 0; c < cards.length; c++) cards[c].classList.add('no-anim');
+        }
+    }
+
+    function updateFilterButtonState() {
+        var btn = el.filterBtn;
+        if (!btn) return;
+        if (filter !== 'all' || categoryFilter !== 'all') {
+            btn.classList.add('active');
+            btn.style.color = 'var(--bl)';
+        } else {
+            btn.classList.remove('active');
+            btn.style.color = '';
         }
     }
 
@@ -875,21 +854,22 @@
         if (idx === -1) return;
         var timer = timers[idx];
 
+        timers.splice(idx, 1);
+        delete notifiedTimers[id];
+        delete notifiedTimers[id + '_done'];
+        saveNotified();
+
+        lastDel = { timer: timer };
+
         var card = el.timerList.querySelector('.tc-card[data-id="' + id + '"]');
         if (card) {
             card.classList.add('removing');
             setTimeout(function () {
-                var freshIdx = timers.findIndex(function (x) { return x.id === id; });
-                if (freshIdx === -1) return;
-                lastDel = { timer: timers[freshIdx] };
-                timers.splice(freshIdx, 1);
                 saveTimers();
                 render();
                 showUndo();
             }, 300);
         } else {
-            lastDel = { timer: timer };
-            timers.splice(idx, 1);
             saveTimers();
             render();
             showUndo();
@@ -970,14 +950,18 @@
                 if (!Array.isArray(data)) throw 0;
                 var valid = data.filter(function (x) { return x && typeof x.title === 'string' && typeof x.date === 'number'; });
                 if (!valid.length) throw 0;
-                showConfirm('Импорт', 'Импортировать ' + valid.length + ' счётчиков?', 'Импортировать', function () {
+                var total = valid.length;
+                showConfirm('Импорт', 'Импортировать ' + total + ' счётчиков?', 'Импортировать', function () {
                     var existingIds = {};
                     for (var i = 0; i < timers.length; i++) existingIds[timers[i].id] = true;
                     var newTimers = valid.filter(function (x) { return !existingIds[x.id]; });
+                    var skipped = total - newTimers.length;
                     timers = timers.concat(newTimers);
                     saveTimers(); render();
                     haptic('success');
-                    notify('Импортировано ' + newTimers.length + (newTimers.length < valid.length ? ' (дубликаты пропущены)' : ''));
+                    var msg = 'Импортировано ' + newTimers.length;
+                    if (skipped > 0) msg += ', пропущено дубликатов: ' + skipped;
+                    notify(msg);
                 });
             } catch (err) { notify('Ошибка формата', 'error'); }
         };
@@ -1159,6 +1143,70 @@
         else timers.splice(targetIdx + 1, 0, moved);
         saveTimers();
         render();
+    }
+
+    function exportImage() {
+        var card = el.timerList.querySelector('.tc-card');
+        if (!card) { notify('Нет счётчиков', 'error'); return; }
+        var cvs = document.createElement('canvas');
+        cvs.width = 800; cvs.height = 600;
+        var c = cvs.getContext('2d');
+        if (!c.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+                if (typeof r === 'number') r = [r, r, r, r];
+                this.moveTo(x + r[0], y);
+                this.lineTo(x + w - r[1], y);
+                this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+                this.lineTo(x + w, y + h - r[2]);
+                this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+                this.lineTo(x + r[3], y + h);
+                this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+                this.lineTo(x, y + r[0]);
+                this.quadraticCurveTo(x, y, x + r[0], y);
+                this.closePath();
+            };
+        }
+        c.fillStyle = '#000'; c.fillRect(0, 0, 800, 600);
+        var grad = c.createLinearGradient(0, 0, 800, 600);
+        grad.addColorStop(0, '#0a84ff'); grad.addColorStop(1, '#5e5ce6');
+        c.fillStyle = grad; c.globalAlpha = 0.15; c.fillRect(0, 0, 800, 600); c.globalAlpha = 1;
+        c.fillStyle = '#fff'; c.font = '700 36px -apple-system, sans-serif'; c.textAlign = 'center';
+        c.fillText('ChronoFlow', 400, 60);
+        c.font = '400 16px -apple-system, sans-serif'; c.fillStyle = 'rgba(255,255,255,0.6)';
+        c.fillText(new Date().toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' }), 400, 90);
+        var items = el.timerList.querySelectorAll('.tc-card');
+        var y = 130;
+        var count = Math.min(items.length, 8);
+        for (var i = 0; i < count; i++) {
+            var el2 = items[i].querySelector('.tc-counter-val');
+            var titleEl = items[i].querySelector('.tc-title');
+            var typeEl = items[i].querySelector('.tc-type');
+            if (!el2 || !titleEl) continue;
+            c.fillStyle = 'rgba(255,255,255,0.08)';
+            c.beginPath(); c.roundRect(40, y, 720, 50, 12); c.fill();
+            c.fillStyle = '#fff'; c.font = '600 15px -apple-system, sans-serif'; c.textAlign = 'left';
+            c.fillText(titleEl.textContent, 60, y + 22);
+            c.fillStyle = el2.style.color || '#fff'; c.font = '300 18px monospace'; c.textAlign = 'right';
+            c.fillText(el2.textContent, 740, y + 28);
+            if (typeEl) {
+                c.fillStyle = 'rgba(255,255,255,0.4)'; c.font = '600 10px -apple-system, sans-serif';
+                c.fillText(typeEl.textContent, 740, y + 44);
+            }
+            y += 58;
+        }
+        if (items.length > 8) {
+            c.fillStyle = 'rgba(255,255,255,0.3)';
+            c.font = '12px -apple-system, sans-serif';
+            c.textAlign = 'right';
+            c.fillText('и ещё ' + (items.length - 8) + ' счётчиков', 760, y + 10);
+        }
+        cvs.toBlob(function (blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'chronoflow-' + new Date().toISOString().slice(0, 10) + '.png';
+            a.click(); URL.revokeObjectURL(url);
+            haptic('success'); notify('Изображение сохранено');
+        });
     }
 
     function bindEvents() {
@@ -1352,6 +1400,8 @@
         if (clearBtn) clearBtn.onclick = function () {
             showConfirm('Очистить всё', 'Удалить все счётчики?', 'Удалить', function () {
                 timers = [];
+                notifiedTimers = {};
+                saveNotified();
                 saveTimers();
                 render();
                 notify('Очищено');
@@ -1396,6 +1446,7 @@
             else if (btn.classList.contains('dl')) delTimer(id);
         };
 
+        // ---------- Desktop Drag and Drop ----------
         if (el.timerList) {
             el.timerList.addEventListener('dragstart', function (e) {
                 var card = e.target.closest('.tc-card');
@@ -1440,7 +1491,10 @@
                 dragSrcId = null;
                 clearDragIndicators();
             });
+        }
 
+        // ---------- Мобильное перетаскивание (исправленное) ----------
+        if (el.timerList) {
             el.timerList.addEventListener('touchstart', function (e) {
                 if (!isTouch) return;
                 var handle = e.target.closest('.tc-handle');
@@ -1448,15 +1502,16 @@
                 var card = handle.closest('.tc-card');
                 if (!card) return;
                 e.preventDefault();
+
                 touchDragCard = card;
-                touchLongPress = setTimeout(function () {
-                    card.classList.add('dragging');
-                    haptic('medium');
-                    touchClone = card.cloneNode(true);
-                    touchClone.className = 'tc-card touch-clone';
-                    touchClone.style.cssText = 'position:fixed;z-index:5000;pointer-events:none;width:' + card.offsetWidth + 'px;opacity:.85;transform:rotate(2deg);';
-                    document.body.appendChild(touchClone);
-                }, 200);
+                var touch = e.touches[0];
+                touchClone = card.cloneNode(true);
+                touchClone.className = 'tc-card touch-clone';
+                touchClone.style.cssText = 'position:fixed;z-index:5000;pointer-events:none;width:' + card.offsetWidth + 'px;opacity:.85;transform:rotate(2deg);';
+                touchClone.style.left = (touch.clientX - touchClone.offsetWidth / 2) + 'px';
+                touchClone.style.top = (touch.clientY - 20) + 'px';
+                document.body.appendChild(touchClone);
+                card.classList.add('dragging');
             }, { passive: false });
 
             el.timerList.addEventListener('touchmove', function (e) {
@@ -1465,9 +1520,13 @@
                 var touch = e.touches[0];
                 touchClone.style.left = (touch.clientX - touchClone.offsetWidth / 2) + 'px';
                 touchClone.style.top = (touch.clientY - 20) + 'px';
+
+                touchClone.style.display = 'none';
+                var elUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+                touchClone.style.display = '';
+                var targetCard = elUnder ? elUnder.closest('.tc-card') : null;
+
                 clearDragIndicators();
-                var el2 = document.elementFromPoint(touch.clientX, touch.clientY);
-                var targetCard = el2 ? el2.closest('.tc-card') : null;
                 if (targetCard && targetCard !== touchDragCard) {
                     var rect = targetCard.getBoundingClientRect();
                     var mid = rect.top + rect.height / 2;
@@ -1477,9 +1536,7 @@
             }, { passive: false });
 
             el.timerList.addEventListener('touchend', function () {
-                if (!isTouch) return;
-                clearTimeout(touchLongPress);
-                if (!touchDragCard) return;
+                if (!isTouch || !touchDragCard) return;
                 var overCard = el.timerList.querySelector('.drag-over-top, .drag-over-bottom');
                 if (overCard) {
                     var insertBefore = overCard.classList.contains('drag-over-top');
@@ -1494,14 +1551,12 @@
 
             el.timerList.addEventListener('touchcancel', function () {
                 if (!isTouch) return;
-                clearTimeout(touchLongPress);
                 if (touchDragCard) touchDragCard.classList.remove('dragging');
                 if (touchClone && touchClone.parentNode) touchClone.parentNode.removeChild(touchClone);
                 touchDragCard = null;
                 touchClone = null;
                 clearDragIndicators();
             });
-
         }
 
         initPullToRefresh();
@@ -1588,6 +1643,16 @@
         var swiping = false;
         var isHorizontal = false;
 
+        function resetSwipe(card) {
+            if (!card) return;
+            var content = card.querySelector('.tc-swipe-content');
+            if (content) {
+                content.classList.remove('swiping');
+                content.style.transform = '';
+            }
+            if (activeSwipe === card) activeSwipe = null;
+        }
+
         el.timerList.addEventListener('touchstart', function (e) {
             if (!isTouch) return;
             var content = e.target.closest('.tc-swipe-content');
@@ -1651,8 +1716,8 @@
                 content.style.transform = 'translateX(-144px)';
             } else {
                 content.style.transform = '';
+                activeSwipe = null;
             }
-            activeSwipe = null;
         }, { passive: true });
 
         el.timerList.addEventListener('touchcancel', function () {
@@ -1661,14 +1726,6 @@
                 activeSwipe = null;
             }
         }, { passive: true });
-
-        function resetSwipe(card) {
-            var content = card.querySelector('.tc-swipe-content');
-            if (content) {
-                content.classList.remove('swiping');
-                content.style.transform = '';
-            }
-        }
 
         document.addEventListener('touchstart', function (e) {
             if (!activeSwipe) return;

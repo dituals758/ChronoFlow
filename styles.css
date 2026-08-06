@@ -810,3 +810,11 @@ body.no-anim *, body.no-anim *::before, body.no-anim *::after { animation-durati
 @media (display-mode: standalone) {
     .scroll-page { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 }
+/* Drag clone style */
+.tc-card.touch-clone {
+    pointer-events: none !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+}
+.lt .tc-card.touch-clone {
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
