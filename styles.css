@@ -339,6 +339,7 @@ main { flex: 1; min-height: 0; overflow: hidden; position: relative; }
     touch-action: pan-y;
     will-change: transform;
     box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 0 0 0.5px rgba(255,255,255,.04) inset;
+    cursor: grab;
 }
 .lt .tc-card {
     box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 0 0 0.5px rgba(0,0,0,.06);
@@ -351,6 +352,15 @@ main { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .tc-card.drag-over-top { box-shadow: inset 0 2px 0 0 var(--bl), 0 1px 3px rgba(0,0,0,.12); }
 .tc-card.drag-over-bottom { box-shadow: inset 0 -2px 0 0 var(--bl), 0 1px 3px rgba(0,0,0,.12); }
 .tc-card.removing { animation: cardOut .3s cubic-bezier(.4,0,.2,1) forwards !important; }
+
+/* ── Стиль для клона карточки при перетаскивании на мобильных ── */
+.tc-card.touch-clone {
+    pointer-events: none !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+}
+.lt .tc-card.touch-clone {
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
 
 .tc-swipe-actions {
     position: absolute; top: 0; right: 0; bottom: 0;
@@ -378,12 +388,35 @@ main { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .tc-swipe-content.swiping { transition: none; }
 
 .tc-handle {
-    display: flex; align-items: center; justify-content: center;
-    width: 18px; flex-shrink: 0; color: var(--t3); opacity: .3;
-    touch-action: none; user-select: none; -webkit-user-select: none;
-    cursor: grab; padding-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    color: var(--t2);
+    opacity: 0.6;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+    border-radius: 8px;
+    transition: background 0.2s, opacity 0.2s, transform 0.15s;
+    margin-right: -4px;
 }
-.tc-handle:active { cursor: grabbing; opacity: .7; }
+.tc-handle:hover {
+    background: var(--ab);
+    opacity: 0.9;
+}
+.tc-handle:active {
+    cursor: grabbing;
+    opacity: 1;
+    transform: scale(0.92);
+}
+.tc-handle svg {
+    width: 18px;
+    height: 18px;
+}
 
 .tc-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .tc-row-top { display: flex; align-items: flex-start; gap: 8px; }
@@ -730,6 +763,98 @@ input:focus-visible + .sl { outline: 2px solid var(--bl); outline-offset: 2px; }
 .tpl-btn:active { background: var(--sf3); }
 .tpl-btn:focus-visible { outline: 2px solid var(--bl); outline-offset: 2px; }
 
+/* ── Change Log ── */
+.changelog {
+    background: var(--sf2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 8px;
+}
+.changelog h4 {
+    font: 600 15px/20px var(--fn);
+    color: var(--t1);
+    margin-bottom: 6px;
+}
+.changelog ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.changelog li {
+    font: 400 13px/18px var(--fn);
+    color: var(--t2);
+    padding: 2px 0 2px 20px;
+    position: relative;
+}
+.changelog li::before {
+    content: '•';
+    position: absolute;
+    left: 2px;
+    color: var(--bl);
+    font-weight: 700;
+}
+.changelog .date {
+    font: 400 11px/14px var(--fn);
+    color: var(--t3);
+    display: block;
+    margin-top: 4px;
+}
+
+/* ── Drag Tip ── */
+.drag-tip {
+    position: fixed;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    left: 16px;
+    right: 16px;
+    z-index: 3000;
+    background: var(--sf);
+    color: var(--t1);
+    padding: 14px 20px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border: 0.33px solid var(--st);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    font: 500 15px/20px var(--fn);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+.drag-tip.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+.drag-tip .tip-icon {
+    flex-shrink: 0;
+    color: var(--bl);
+    font-size: 24px;
+}
+.drag-tip .tip-close {
+    background: var(--blb);
+    color: var(--bl);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+.drag-tip .tip-close:active {
+    background: var(--blh);
+    transform: scale(0.92);
+}
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 0; }
 * { scrollbar-width: none; }
@@ -809,12 +934,4 @@ body.no-anim *, body.no-anim *::before, body.no-anim *::after { animation-durati
 }
 @media (display-mode: standalone) {
     .scroll-page { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
-}
-/* Drag clone style */
-.tc-card.touch-clone {
-    pointer-events: none !important;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-}
-.lt .tc-card.touch-clone {
-    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
 }
