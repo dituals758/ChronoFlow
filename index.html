@@ -14,6 +14,8 @@
     <meta property="og:title" content="ChronoFlow — Время на вашей стороне">
     <meta property="og:description" content="Не курю 45 дней. До отпуска 128 дней. 2 года на новой работе. Визуальные счётчики для всего, что важно. Офлайн PWA.">
     <meta property="og:type" content="website">
+    <!-- CSP: разрешаем внешние и инлайн-стили/скрипты с того же источника -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:;">
     <title>ChronoFlow</title>
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/svg+xml" href="./icon.svg">
@@ -23,7 +25,6 @@
 </head>
 <body>
     <a href="#main" class="skip-link">Перейти к содержимому</a>
-
     <div id="splash" class="splash" aria-hidden="true">
         <div class="splash-inner">
             <div class="splash-logo">
@@ -34,7 +35,6 @@
             <div class="splash-bar"><div class="splash-bar-fill"></div></div>
         </div>
     </div>
-
     <header>
         <div class="hdr">
             <div class="hdr-left">
@@ -55,7 +55,6 @@
             </div>
         </div>
     </header>
-
     <main id="main">
         <div class="scroll-page" id="scrollPage" aria-label="Основной контент">
             <section id="clockSection" role="region" aria-label="Часы">
@@ -75,41 +74,22 @@
                                     <stop offset="100%" stop-color="#34c759"/>
                                 </linearGradient>
                             </defs>
-
-                            <!-- Outer ring: seconds -->
                             <circle class="ring-bg" cx="100" cy="100" r="88" fill="none" stroke-width="3"/>
                             <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="88" fill="none" stroke-width="3" stroke-linecap="round" transform="rotate(-90 100 100)" stroke="url(#ringGrad)"/>
-
-                            <!-- Inner ring: day progress (24h) -->
                             <circle class="ring-bg day-ring" cx="100" cy="100" r="76" fill="none" stroke-width="3"/>
                             <circle class="day-ring-fill" id="dayRingFill" cx="100" cy="100" r="76" fill="none" stroke-width="3" stroke-linecap="round" transform="rotate(-90 100 100)" stroke="url(#dayRingGrad)"/>
-
-                            <!-- Day dots -->
                             <g class="day-dots" id="dayDots"></g>
-
-                            <!-- Text: day of week -->
                             <text id="svgDay" x="100" y="52" text-anchor="middle" fill="currentColor" class="svg-text svg-day"></text>
-
-                            <!-- Text: time of day -->
                             <text id="svgSt" x="100" y="64" text-anchor="middle" fill="currentColor" class="svg-text svg-st"></text>
-
-                            <!-- Text: time HH:MM -->
                             <text id="svgTime" x="100" y="108" text-anchor="middle" fill="currentColor" class="svg-text svg-time"></text>
-
-                            <!-- Text: seconds -->
                             <text id="svgSec" x="100" y="126" text-anchor="middle" fill="currentColor" class="svg-text svg-sec"></text>
-
-                            <!-- Text: date M/D -->
                             <text id="svgDate" x="100" y="145" text-anchor="middle" fill="currentColor" class="svg-text svg-date"></text>
-
-                            <!-- Tick marks for seconds -->
                             <g id="svgTicks"></g>
                         </svg>
                         <div class="sr-only" id="timeAnnounce"></div>
                     </div>
                 </div>
             </section>
-
             <section id="timersSection" role="region" aria-label="Счётчики времени">
                 <div class="pull-indicator" id="pullIndicator" aria-hidden="true"></div>
                 <div class="section-hdr">
@@ -121,7 +101,8 @@
                     </div>
                 </div>
                 <div class="search-bar" id="searchBar">
-                    <input type="text" id="searchInput" class="search-input" placeholder="Найти счётчик..." autocomplete="off" aria-label="Поиск по названию счётчика">
+                    <label for="searchInput" class="sr-only">Поиск по названию счётчика</label>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Найти счётчик..." autocomplete="off">
                     <button id="searchClear" class="search-clear hidden" aria-label="Очистить поиск"></button>
                 </div>
                 <div id="timerList" role="list" aria-label="Список счётчиков"></div>
@@ -144,24 +125,23 @@
             </section>
         </div>
     </main>
-
     <div class="modal" id="timerModal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
         <div class="mc">
             <div class="mc-handle" aria-hidden="true"></div>
             <div class="mh">
                 <h2 id="mTitle">Новый счётчик</h2>
-                <button id="closeModal" class="ibtn-s" aria-label="Закрыть" title="Закрыть"></button>
+                <button class="ibtn-s" data-close-modal="timerModal" aria-label="Закрыть" title="Закрыть"></button>
             </div>
             <form id="timerForm" novalidate>
                 <div class="fg">
                     <label for="timerTitle">Название</label>
-                    <input id="timerTitle" maxlength="50" required placeholder="Как вы хотите это запомнить?" autocomplete="off" aria-required="true" aria-label="Название счётчика">
+                    <input id="timerTitle" maxlength="50" required placeholder="Как вы хотите это запомнить?" autocomplete="off" aria-required="true">
                     <span class="cc" id="titleCnt">0/50</span>
                 </div>
                 <div class="fg">
                     <label for="timerType">Тип счётчика</label>
                     <div class="select-wrap">
-                        <select id="timerType" aria-label="Тип счётчика">
+                        <select id="timerType">
                             <option value="elapsed">Сколько прошло с даты</option>
                             <option value="countdown">Сколько осталось до даты</option>
                         </select>
@@ -173,6 +153,12 @@
                         <input type="datetime-local" id="timerDate" required aria-required="true">
                         <button type="button" class="date-picker-btn reset-time-btn" id="resetTimeBtn" aria-label="Установить текущее время" title="Текущее время"></button>
                         <button type="button" class="date-picker-btn" id="datePickerBtn" aria-label="Открыть календарь" title="Выбрать дату"></button>
+                    </div>
+                    <div class="quick-date-btns">
+                        <button type="button" class="btn-s quick-date" data-offset="0">Сегодня</button>
+                        <button type="button" class="btn-s quick-date" data-offset="1">Завтра</button>
+                        <button type="button" class="btn-s quick-date" data-offset="7">Через неделю</button>
+                        <button type="button" class="btn-s quick-date" data-offset="30">+1 месяц</button>
                     </div>
                 </div>
                 <div class="fg">
@@ -192,40 +178,40 @@
                         <div class="hsl-sliders">
                             <div class="hsl-row">
                                 <label for="hslH">H</label>
-                                <input type="range" id="hslH" min="0" max="360" value="200" class="hsl-range hsl-h" aria-label="Тон">
+                                <input type="range" id="hslH" min="0" max="360" value="200" class="hsl-range hsl-h">
                                 <span id="hslHVal">200</span>
                             </div>
                             <div class="hsl-row">
                                 <label for="hslS">S</label>
-                                <input type="range" id="hslS" min="0" max="100" value="100" class="hsl-range hsl-s" aria-label="Насыщенность">
+                                <input type="range" id="hslS" min="0" max="100" value="100" class="hsl-range hsl-s">
                                 <span id="hslSVal">100</span>
                             </div>
                             <div class="hsl-row">
                                 <label for="hslL">L</label>
-                                <input type="range" id="hslL" min="10" max="90" value="55" class="hsl-range hsl-l" aria-label="Яркость">
+                                <input type="range" id="hslL" min="10" max="90" value="55" class="hsl-range hsl-l">
                                 <span id="hslLVal">55</span>
                             </div>
                         </div>
-                        <button type="button" class="btn-p" id="hslApply" aria-label="Применить цвет">Готово</button>
+                        <button type="button" class="btn-p" id="hslApply">Готово</button>
                     </div>
                 </div>
                 <div class="fg">
                     <label for="timerCategory">Категория</label>
                     <div class="select-wrap">
-                    <select id="timerCategory" aria-label="Категория счётчика">
-                        <option value="">Без категории</option>
-                        <option value="work">Работа</option>
-                        <option value="health">Здоровье</option>
-                        <option value="personal">Личное</option>
-                        <option value="study">Учёба</option>
-                        <option value="travel">Путешествия</option>
-                    </select>
+                        <select id="timerCategory">
+                            <option value="">Без категории</option>
+                            <option value="work">Работа</option>
+                            <option value="health">Здоровье</option>
+                            <option value="personal">Личное</option>
+                            <option value="study">Учёба</option>
+                            <option value="travel">Путешествия</option>
+                        </select>
                     </div>
                 </div>
                 <div class="fg">
                     <label for="timerRecurring">Повтор</label>
                     <div class="select-wrap">
-                        <select id="timerRecurring" aria-label="Тип повтора">
+                        <select id="timerRecurring">
                             <option value="">Одноразовый</option>
                             <option value="weekly">Каждую неделю</option>
                             <option value="monthly">Каждый месяц</option>
@@ -237,14 +223,14 @@
                     <div class="sr">
                         <label for="timerReminder">Напоминание</label>
                         <label class="sw">
-                            <input type="checkbox" id="timerReminder" aria-label="Включить напоминание">
+                            <input type="checkbox" id="timerReminder">
                             <span class="sl"></span>
                         </label>
                     </div>
                 </div>
                 <div class="fa">
-                    <button type="button" class="btn-s" id="cancelBtn" aria-label="Отменить и закрыть">Отмена</button>
-                    <button type="submit" class="btn-p" id="saveBtn" aria-label="Сохранить счётчик">Сохранить</button>
+                    <button type="button" class="btn-s" data-close-modal="timerModal">Отмена</button>
+                    <button type="submit" class="btn-p" id="saveBtn">Сохранить</button>
                 </div>
                 <div class="fa" id="saveMoreRow" style="display:none">
                     <button type="button" class="btn-s fw" id="saveMoreBtn">Сохранить и создать ещё</button>
@@ -252,18 +238,17 @@
             </form>
         </div>
     </div>
-
     <div class="modal" id="fModal" role="dialog" aria-modal="true" aria-labelledby="fModalTitle">
         <div class="mc">
             <div class="mc-handle" aria-hidden="true"></div>
             <div class="mh">
                 <h2 id="fModalTitle">Фильтры</h2>
-                <button id="closeFModal" class="ibtn-s" aria-label="Закрыть" title="Закрыть"></button>
+                <button class="ibtn-s" data-close-modal="fModal" aria-label="Закрыть" title="Закрыть"></button>
             </div>
             <div class="fg">
                 <label for="fSelect">Тип</label>
                 <div class="select-wrap">
-                    <select id="fSelect" aria-label="Тип счётчика">
+                    <select id="fSelect">
                         <option value="all">Все счётчики</option>
                         <option value="elapsed">Только «сколько прошло»</option>
                         <option value="countdown">Только «сколько осталось»</option>
@@ -273,7 +258,7 @@
             <div class="fg">
                 <label for="sortSelect">Сортировка</label>
                 <div class="select-wrap">
-                    <select id="sortSelect" aria-label="Порядок сортировки">
+                    <select id="sortSelect">
                         <option value="order">Мой порядок</option>
                         <option value="created">Сначала новые</option>
                         <option value="date">По дате события</option>
@@ -284,7 +269,7 @@
             <div class="fg">
                 <label for="catSelect">Категория</label>
                 <div class="select-wrap">
-                    <select id="catSelect" aria-label="Фильтр по категории">
+                    <select id="catSelect">
                         <option value="all">Все категории</option>
                         <option value="">Без категории</option>
                         <option value="work">Работа</option>
@@ -297,46 +282,37 @@
             </div>
             <div class="fg">
                 <label>Шаблоны</label>
-                <div class="tpl-grid">
-                    <button type="button" class="tpl-btn" data-tpl="sobriety">Не курю</button>
-                    <button type="button" class="tpl-btn" data-tpl="work">На работе</button>
-                    <button type="button" class="tpl-btn" data-tpl="vacation">До отпуска</button>
-                    <button type="button" class="tpl-btn" data-tpl="language">Язык</button>
-                    <button type="button" class="tpl-btn" data-tpl="fitness">Фитнес</button>
-                    <button type="button" class="tpl-btn" data-tpl="savings">Накопления</button>
-                </div>
+                <div class="tpl-grid"></div>
             </div>
             <div class="fa">
                 <button class="btn-s" id="exportImgBtn" aria-label="Экспорт в изображение">Картинка</button>
-                <button class="btn-p" id="applyFBtn" aria-label="Применить фильтр">Применить</button>
+                <button class="btn-p" id="applyFBtn">Применить</button>
             </div>
         </div>
     </div>
-
     <div class="modal" id="sModal" role="dialog" aria-modal="true" aria-labelledby="sModalTitle">
         <div class="mc">
             <div class="mc-handle" aria-hidden="true"></div>
             <div class="mh">
                 <h2 id="sModalTitle" class="accent-text">Настройки</h2>
-                <button id="closeSModal" class="ibtn-s" aria-label="Закрыть" title="Закрыть"></button>
+                <button class="ibtn-s" data-close-modal="sModal" aria-label="Закрыть" title="Закрыть"></button>
             </div>
             <div class="sg">
                 <h3>Внешний вид</h3>
                 <div class="sr">
-                    <span>Тема</span>
+                    <label for="themeSel">Тема</label>
                     <div class="select-wrap select-sm">
-                        <select id="themeSel" aria-label="Выбор темы">
+                        <select id="themeSel">
                             <option value="system">Системная</option>
                             <option value="dark">Тёмная</option>
                             <option value="light">Светлая</option>
                         </select>
-                        
                     </div>
                 </div>
                 <div class="sr">
                     <label for="animToggle">Анимации</label>
                     <label class="sw">
-                        <input type="checkbox" id="animToggle" checked aria-label="Включить анимации">
+                        <input type="checkbox" id="animToggle" checked>
                         <span class="sl"></span>
                     </label>
                 </div>
@@ -372,31 +348,93 @@
                 </ul>
                 <p class="ai" style="margin-top:16px;font-style:italic;color:var(--t3)">«Время нельзя остановить. Но можно считать каждый день.»</p>
                 <div class="about-links">
-                    <a href="./privacy.html" target="_blank" rel="noopener" aria-label="Политика конфиденциальности ChronoFlow">Политика конфиденциальности</a>
-                    <a href="./terms.html" target="_blank" rel="noopener" aria-label="Условия использования ChronoFlow">Условия использования</a>
-                    <a href="https://github.com/dituals758/ChronoFlow" target="_blank" rel="noopener noreferrer" aria-label="Исходный код на GitHub">GitHub</a>
+                    <a href="./privacy.html" target="_blank" rel="noopener" class="about-link" aria-label="Политика конфиденциальности ChronoFlow">
+                        <span class="link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0110 0v4"/>
+                            </svg>
+                        </span>
+                        <span class="link-label">Политика конфиденциальности</span>
+                        <span class="link-chevron">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9 6l6 6-6 6"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <a href="./terms.html" target="_blank" rel="noopener" class="about-link" aria-label="Условия использования ChronoFlow">
+                        <span class="link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/>
+                                <path d="M14 2v6h6"/>
+                                <path d="M8 13h8M8 17h5"/>
+                            </svg>
+                        </span>
+                        <span class="link-label">Условия использования</span>
+                        <span class="link-chevron">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9 6l6 6-6 6"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <a href="https://github.com/dituals758/ChronoFlow" target="_blank" rel="noopener noreferrer" class="about-link" aria-label="Исходный код на GitHub">
+                        <span class="link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M16 8l4 4-4 4M8 8l-4 4 4 4"/>
+                            </svg>
+                        </span>
+                        <span class="link-label">GitHub</span>
+                        <span class="link-chevron">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9 6l6 6-6 6"/>
+                            </svg>
+                        </span>
+                    </a>
                 </div>
                 <div class="about-credits">
                     <p class="ai">Разработано: <strong>dituals758</strong></p>
-                    <p class="ai">AI: <strong>MiMo Code</strong> (Xiaomi)</p>
+                    <p class="ai">AI-соавтор: <strong>MiMo Code</strong> (Xiaomi MiMo Team)</p>
+                    <p class="ai" style="margin-top: 4px;">Лицензия: <strong>MIT</strong> &middot; <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener" style="color: var(--bl); text-decoration: none;">Подробнее</a></p>
+                    <p class="ai" style="margin-top: 4px; font-size: 12px; color: var(--t3);">© 2026 ChronoFlow. Все права защищены.</p>
+                </div>
+            </div>
+            <div class="sg">
+                <h3>Что нового</h3>
+                <div class="changelog" id="changelogBlock">
+                    <h4>Версия 2026.08.13</h4>
+                    <ul>
+                        <li>Исправлен баг с перетаскиванием на мобильных — длительное нажатие больше не вызывает скролл.</li>
+                        <li>Улучшена обработка ошибок при импорте (подробные сообщения).</li>
+                        <li>Переработан блок ссылок в настройках: теперь каждая ссылка имеет иконку и стрелку-шеврон в стиле iOS.</li>
+                        <li>Оптимизирован код: унифицированы уведомления, модальные окна, генерация карточек и шаблонов. Приложение стало быстрее и легче.</li>
+                    </ul>
+                    <span class="date">Выпущено 13 августа 2026 г.</span>
+                    <h4>Версия 2026.08.10</h4>
+                    <ul>
+                        <li>Добавлены быстрые кнопки даты (Сегодня, Завтра, Через неделю, +1 месяц) в модалке.</li>
+                        <li>Появилась возможность дублировать счётчик – нажмите на иконку копирования на карточке.</li>
+                        <li>Улучшена обработка ошибок при импорте – теперь вы увидите конкретную причину.</li>
+                        <li>Визуальные улучшения: увеличенная ручка перетаскивания, контрастность, фокус-индикаторы.</li>
+                    </ul>
+                    <span class="date">Выпущено 10 августа 2026 г.</span>
                 </div>
             </div>
         </div>
     </div>
-
     <div class="confirm-modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMsg">
         <div class="confirm-backdrop"></div>
         <div class="confirm-box">
             <h3 id="confirmTitle">Подтверждение</h3>
             <p id="confirmMsg">Вы уверены?</p>
             <div class="confirm-actions">
-                <button class="btn-s fw" id="confirmCancel" aria-label="Отмена">Отмена</button>
-                <button class="btn-s fw btn-danger" id="confirmOk" aria-label="Удалить">Удалить</button>
+                <button class="btn-s fw" id="confirmCancel">Отмена</button>
+                <button class="btn-s fw btn-danger" id="confirmOk">Удалить</button>
             </div>
         </div>
     </div>
-
-    <input type="file" id="importFile" accept=".json" class="hidden" aria-hidden="true">
+    <!-- Скрытый input для импорта, доступный для скринридеров -->
+    <label for="importFile" class="sr-only">Импорт данных из JSON</label>
+    <input type="file" id="importFile" accept=".json" class="hidden" aria-hidden="false">
     <div class="notif toast" id="notif" role="alert" aria-live="assertive"></div>
     <script src="./version.js"></script>
     <script src="./app.js"></script>
