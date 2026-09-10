@@ -1,5 +1,6 @@
 (function() {
     'use strict';
+    // ===== Константы =====
     var COLORS = ['#5ab0e0', '#7eacff', '#b89cff', '#ff7eb3', '#ff8c00', '#5cd66e', '#ff6b6b'];
     var DEFAULT_COLOR = '#60cdff';
     var DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
@@ -13,7 +14,7 @@
         close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>',
         trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>',
         clock: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
-        calendarPicker: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>',
+        calendarPicker: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
         exportDown: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>',
         importUp: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>',
         image: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
@@ -21,19 +22,30 @@
         searchClear: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>',
         check: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
         error: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>',
-        info: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 12v4M12 8h.01"/></svg>'
+        info: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 12v4M12 8h.01"/></svg>',
+        mute: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>',
+        bell: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
+        calendar: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'
     };
     var STORAGE_TIMERS = 'timeflow_timers';
     var STORAGE_SETTINGS = 'timeflow_settings';
     var STORAGE_NOTIFIED = 'timeflow_notified';
+    var STORAGE_DND = 'timeflow_dnd';
+    var STORAGE_LAST_UPDATE = 'chronoflow_drag_tip_version';
     var MAX_TITLE = 50;
+    var DND_DURATION = 24 * 60 * 60 * 1000; // 24 часа
+
+    // ===== Состояние =====
     var timers = [];
+    var dnd = {};
     var editId = null;
     var filter = 'all';
     var sortBy = 'order';
     var categoryFilter = 'all';
     var searchQuery = '';
+    var groupByCategory = false;
     var notifiedTimers = {};
+    var settings = {};
     var prevDay = -1;
     var prevHour = -1;
     var lastTick = 0;
@@ -50,32 +62,29 @@
     var _pageVisible = true;
     var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     var el = {};
-    // --- ID для анимаций ---
     var _tickRafId = null;
     var _tickSvgRafId = null;
+    var intersectionObserver = null;
+    var visibleCards = new Set();
+    var _categoriesOpen = {};
 
+    // ===== Storage =====
     var storage = {
         get: function(key, def) {
-            try {
-                var val = localStorage.getItem(key);
-                return val ? JSON.parse(val) : def;
-            } catch (e) { return def; }
+            try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : def; }
+            catch (e) { return def; }
         },
         set: function(key, val) {
-            try {
-                localStorage.setItem(key, JSON.stringify(val));
-            } catch (e) {
+            try { localStorage.setItem(key, JSON.stringify(val)); }
+            catch (e) {
                 if (e.name === 'QuotaExceededError' || e.code === 22) {
-                    toast.error('Хранилище переполнено. Удалите лишние счётчики или экспортируйте данные.');
-                } else {
-                    console.warn('storage.set error:', e);
-                }
+                    toast.error('Хранилище переполнено. Удалите лишние счётчики.');
+                } else console.warn('storage.set error:', e);
             }
-        },
-        remove: function(key) {
-            try { localStorage.removeItem(key); } catch (e) {}
         }
     };
+
+    // ===== Toast =====
     var toast = {
         show: function(msg, type) {
             var n = el.notif;
@@ -91,28 +100,12 @@
             n._t = setTimeout(function() { n.classList.remove('show'); }, 2800);
             haptic(type === 'error' ? 'error' : 'light');
         },
-        success: function(msg) { this.show(msg, 'success'); },
-        error: function(msg) { this.show(msg, 'error'); },
-        info: function(msg) { this.show(msg, 'info'); }
+        success: function(m) { this.show(m, 'success'); },
+        error: function(m) { this.show(m, 'error'); },
+        info: function(m) { this.show(m, 'info'); }
     };
-    function ensureRoundRect() {
-        if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
-            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
-                var r = typeof radii === 'number' ? [radii, radii, radii, radii] : radii;
-                if (!Array.isArray(r) || r.length < 4) r = [0,0,0,0];
-                this.moveTo(x + r[0], y);
-                this.lineTo(x + w - r[1], y);
-                this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
-                this.lineTo(x + w, y + h - r[2]);
-                this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
-                this.lineTo(x + r[3], y + h);
-                this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
-                this.lineTo(x, y + r[0]);
-                this.quadraticCurveTo(x, y, x + r[0], y);
-                this.closePath();
-            };
-        }
-    }
+
+    // ===== Утилиты =====
     function $(id) { return document.getElementById(id); }
     function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -122,21 +115,17 @@
     }
     function localISO(d) {
         var off = d.getTimezoneOffset();
-        var local = new Date(d.getTime() - off * 60000);
-        return local.toISOString().slice(0,16);
+        return new Date(d.getTime() - off * 60000).toISOString().slice(0,16);
     }
     function relDay(d) { return d.getDay() === 0 ? 6 : d.getDay() - 1; }
-    function declension(value, forms) {
-        value = Math.abs(value);
-        var n = value % 100;
+    function declension(v, forms) {
+        v = Math.abs(v);
+        var n = v % 100;
         var idx = (n >= 5 && n <= 20) ? 2 : (n % 10 === 1) ? 0 : (n % 10 >= 2 && n % 10 <= 4) ? 1 : 2;
-        return value + ' ' + forms[idx];
+        return v + ' ' + forms[idx];
     }
-    function diffToParts(diff) {
-        var sc = Math.floor(diff / 1000);
-        var mn = Math.floor(sc / 60);
-        var hr = Math.floor(mn / 60);
-        var dy = Math.floor(hr / 24);
+    function diffToParts(d) {
+        var sc = Math.floor(d/1000), mn = Math.floor(sc/60), hr = Math.floor(mn/60), dy = Math.floor(hr/24);
         return { sc: sc, mn: mn, hr: hr, dy: dy };
     }
     function calcDateParts(totalDays) {
@@ -153,26 +142,42 @@
         var now = Date.now();
         var diff = type === 'countdown' ? timestamp - now : now - timestamp;
         var negative = diff < 0;
-        var absDiff = Math.abs(diff);
         if (type === 'elapsed' && negative) return 'Ещё не наступило';
-        var parts = diffToParts(absDiff);
+        var abs = Math.abs(diff);
+        var parts = diffToParts(abs);
         var dp = calcDateParts(parts.dy);
         var rh = parts.hr % 24, rm = parts.mn % 60, rs = parts.sc % 60;
-        var resultParts = [];
-        if (dp.y > 0) resultParts.push(declension(dp.y, ['год','года','лет']));
-        if (dp.mo > 0) resultParts.push(declension(dp.mo, ['месяц','месяца','месяцев']));
-        if (dp.dd > 0) resultParts.push(declension(dp.dd, ['день','дня','дней']));
-        if (rh > 0) resultParts.push(declension(rh, ['час','часа','часов']));
-        if (rm > 0) resultParts.push(declension(rm, ['минуту','минуты','минут']));
-        if (rs > 0 || resultParts.length === 0) resultParts.push(declension(rs, ['секунду','секунды','секунд']));
-        var result = resultParts.join(' ');
+        var r = [];
+        if (dp.y > 0) r.push(declension(dp.y, ['год','года','лет']));
+        if (dp.mo > 0) r.push(declension(dp.mo, ['месяц','месяца','месяцев']));
+        if (dp.dd > 0) r.push(declension(dp.dd, ['день','дня','дней']));
+        if (rh > 0) r.push(declension(rh, ['час','часа','часов']));
+        if (rm > 0) r.push(declension(rm, ['минуту','минуты','минут']));
+        if (rs > 0 || r.length === 0) r.push(declension(rs, ['секунду','секунды','секунд']));
+        var result = r.join(' ');
         if (type === 'countdown' && negative) result += ' назад';
         return result;
     }
+    function formatDate(ts, fmt) {
+        fmt = fmt || (settings.dateFormat || 'DD.MM.YYYY');
+        var d = new Date(ts);
+        var dd = pad(d.getDate()), mm = pad(d.getMonth()+1), yyyy = d.getFullYear();
+        var hh = pad(d.getHours()), mi = pad(d.getMinutes());
+        if (fmt === 'MM/DD/YYYY') return mm + '/' + dd + '/' + yyyy + ' ' + hh + ':' + mi;
+        if (fmt === 'YYYY-MM-DD') return yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + mi;
+        return dd + '.' + mm + '.' + yyyy + ' ' + hh + ':' + mi;
+    }
+    function lightenHex(hex, pct) {
+        if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return hex || DEFAULT_COLOR;
+        var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+        r = Math.min(255, Math.round(r + (255 - r) * pct));
+        g = Math.min(255, Math.round(g + (255 - g) * pct));
+        b = Math.min(255, Math.round(b + (255 - b) * pct));
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
     var _userTapped = false;
-    function markUserGesture() { _userTapped = true; }
-    document.addEventListener('pointerdown', markUserGesture, { once: true, passive: true });
-    document.addEventListener('keydown', markUserGesture, { once: true, passive: true });
+    document.addEventListener('pointerdown', function() { _userTapped = true; }, { once: true, passive: true });
+    document.addEventListener('keydown', function() { _userTapped = true; }, { once: true, passive: true });
     function haptic(type) {
         if (!navigator.vibrate || !_userTapped) return;
         try {
@@ -182,38 +187,74 @@
             else navigator.vibrate(10);
         } catch(e) {}
     }
-    var CAT_NAMES = {
-        work: 'Работа', health: 'Здоровье', personal: 'Личное',
-        study: 'Учёба', travel: 'Путешествия'
-    };
-    var REC_NAMES = { weekly: 'Еженед.', monthly: 'Ежемес.', yearly: 'Ежегод.' };
+    function ensureRoundRect() {
+        if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+                var r = typeof radii === 'number' ? [radii,radii,radii,radii] : radii;
+                if (!Array.isArray(r) || r.length < 4) r = [0,0,0,0];
+                this.moveTo(x+r[0], y);
+                this.lineTo(x+w-r[1], y);
+                this.quadraticCurveTo(x+w, y, x+w, y+r[1]);
+                this.lineTo(x+w, y+h-r[2]);
+                this.quadraticCurveTo(x+w, y+h, x+w-r[2], y+h);
+                this.lineTo(x+r[3], y+h);
+                this.quadraticCurveTo(x, y+h, x, y+h-r[3]);
+                this.lineTo(x, y+r[0]);
+                this.quadraticCurveTo(x, y, x+r[0], y);
+                this.closePath();
+            };
+        }
+    }
+
+    // ===== Метаданные =====
+    var CAT_NAMES = { work:'Работа', health:'Здоровье', personal:'Личное', study:'Учёба', travel:'Путешествия' };
+    var REC_NAMES = { weekly:'Еженед.', monthly:'Ежемес.', yearly:'Ежегод.' };
     var TPL_DATA = {
-        sobriety: { title: 'Не курю', type: 'elapsed', color: '#30d158', category: 'health', recurring: '', reminder: false },
-        work: { title: 'На работе', type: 'elapsed', color: '#0a84ff', category: 'work', recurring: '', reminder: false },
-        vacation: { title: 'До отпуска', type: 'countdown', color: '#ff8c00', category: 'travel', recurring: '', reminder: true },
-        language: { title: 'Изучение языка', type: 'elapsed', color: '#bf5af2', category: 'study', recurring: '', reminder: false },
-        fitness: { title: 'Фитнес streak', type: 'elapsed', color: '#ff6b6b', category: 'health', recurring: 'weekly', reminder: false },
-        savings: { title: 'Накопления', type: 'elapsed', color: '#5cd66e', category: 'personal', recurring: '', reminder: false }
+        sobriety: { title:'Не курю', type:'elapsed', color:'#30d158', category:'health', recurring:'', reminder:false },
+        work: { title:'На работе', type:'elapsed', color:'#0a84ff', category:'work', recurring:'', reminder:false },
+        vacation: { title:'До отпуска', type:'countdown', color:'#ff8c00', category:'travel', recurring:'', reminder:true },
+        language: { title:'Изучение языка', type:'elapsed', color:'#bf5af2', category:'study', recurring:'', reminder:false },
+        fitness: { title:'Фитнес streak', type:'elapsed', color:'#ff6b6b', category:'health', recurring:'weekly', reminder:false },
+        savings: { title:'Накопления', type:'elapsed', color:'#5cd66e', category:'personal', recurring:'', reminder:false }
     };
+
+    // ===== Загрузка/сохранение =====
     function loadSettings() {
-        var s = storage.get(STORAGE_SETTINGS, {});
-        var t = s.theme || 'system';
+        settings = storage.get(STORAGE_SETTINGS, {});
+        var t = settings.theme || 'system';
         applyTheme(t);
         if (el.themeSel) el.themeSel.value = t;
-        if (s.anims === false) { anims = false; if (el.animToggle) el.animToggle.checked = false; }
-        if (s.sortBy) sortBy = s.sortBy;
-        if (s.categoryFilter) categoryFilter = s.categoryFilter;
-        if (s.filter) filter = s.filter;
+        anims = settings.anims !== false;
+        if (el.animToggle) el.animToggle.checked = anims;
+        if (settings.sortBy) sortBy = settings.sortBy;
+        if (settings.categoryFilter) categoryFilter = settings.categoryFilter;
+        if (settings.filter) filter = settings.filter;
+        groupByCategory = !!settings.groupByCategory;
+        if (el.groupToggle) el.groupToggle.checked = groupByCategory;
+        if (el.dateFormat) el.dateFormat.value = settings.dateFormat || 'DD.MM.YYYY';
+        if (el.weekStart) el.weekStart.value = String(settings.weekStart != null ? settings.weekStart : 1);
+        if (el.notifEnabled) el.notifEnabled.checked = settings.notifEnabled !== false;
+        if (el.notifPeriod) el.notifPeriod.value = String(settings.notifPeriod != null ? settings.notifPeriod : 3);
+        if (el.praiseEnabled) el.praiseEnabled.checked = settings.praiseEnabled !== false;
+        if (el.praiseInterval) el.praiseInterval.value = String(settings.praiseInterval || 30);
         applyAnimPref();
     }
     function saveSettings() {
-        storage.set(STORAGE_SETTINGS, {
+        settings = {
             theme: el.themeSel ? el.themeSel.value : 'system',
             anims: el.animToggle ? el.animToggle.checked : true,
             sortBy: sortBy,
             categoryFilter: categoryFilter,
-            filter: filter
-        });
+            filter: filter,
+            groupByCategory: el.groupToggle ? el.groupToggle.checked : false,
+            dateFormat: el.dateFormat ? el.dateFormat.value : 'DD.MM.YYYY',
+            weekStart: el.weekStart ? parseInt(el.weekStart.value) : 1,
+            notifEnabled: el.notifEnabled ? el.notifEnabled.checked : true,
+            notifPeriod: el.notifPeriod ? parseInt(el.notifPeriod.value) : 3,
+            praiseEnabled: el.praiseEnabled ? el.praiseEnabled.checked : true,
+            praiseInterval: el.praiseInterval ? parseInt(el.praiseInterval.value) : 30
+        };
+        storage.set(STORAGE_SETTINGS, settings);
     }
     function loadTimers() {
         var raw = storage.get(STORAGE_TIMERS);
@@ -226,6 +267,16 @@
     function saveTimers() { storage.set(STORAGE_TIMERS, timers); }
     function loadNotified() { notifiedTimers = storage.get(STORAGE_NOTIFIED, {}); }
     function saveNotified() { storage.set(STORAGE_NOTIFIED, notifiedTimers); }
+    function loadDnd() { dnd = storage.get(STORAGE_DND, {}); }
+    function saveDnd() { storage.set(STORAGE_DND, dnd); }
+    function isDnd(timerId) {
+        var until = dnd[timerId];
+        if (!until) return false;
+        if (Date.now() > until) { delete dnd[timerId]; saveDnd(); return false; }
+        return true;
+    }
+
+    // ===== Тема =====
     function applyTheme(t) {
         document.body.classList.remove('lt');
         if (t === 'light') document.body.classList.add('lt');
@@ -239,29 +290,62 @@
         if (!anims) document.body.classList.add('no-anim');
         else document.body.classList.remove('no-anim');
     }
+
+    // ===== Уведомления =====
     function requestNotifPermission() {
         if (!('Notification' in window)) return;
         if (Notification.permission === 'default') Notification.requestPermission();
     }
     function sendNotification(title, body) {
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
-        try { new Notification(title, { body: body, icon: './icon-192.png', badge: './icon-192.png', tag: 'chronoflow' }); } catch(e) {}
+        try {
+            new Notification(title, {
+                body: body,
+                icon: './icon-192.png',
+                badge: './icon-192.png',
+                tag: 'chronoflow',
+                vibrate: [200,100,200]
+            });
+        } catch(e) {}
     }
     function checkNotifications(now) {
+        if (settings.notifEnabled === false) return;
         var ts = now.getTime();
         var changed = false;
+        var period = settings.notifPeriod != null ? settings.notifPeriod : 3;
+        var praiseEnabled = settings.praiseEnabled !== false;
+        var praiseInterval = settings.praiseInterval || 30;
+        var dayMs = 86400000;
         for (var i = 0; i < timers.length; i++) {
             var t = timers[i];
-            if (t.type !== 'countdown' || !t.reminder) continue;
-            var diff = t.date - ts;
-            if (diff > 0 && diff < 86400000 && !notifiedTimers[t.id]) {
-                notifiedTimers[t.id] = true;
-                changed = true;
-                sendNotification('ChronoFlow', t.title + ' — завтра!');
-            } else if (diff <= 0 && diff > -3600000 && !notifiedTimers[t.id + '_done']) {
-                notifiedTimers[t.id + '_done'] = true;
-                changed = true;
-                sendNotification('ChronoFlow', t.title + ' наступил!');
+            if (isDnd(t.id)) continue;
+            // Напоминания для countdown
+            if (t.type === 'countdown' && t.reminder) {
+                var diff = t.date - ts;
+                var daysLeft = Math.ceil(diff / dayMs);
+                var periods = [period, 1, 0];
+                if (daysLeft >= 0 && periods.indexOf(daysLeft) !== -1) {
+                    var key = 'r_' + t.id + '_' + daysLeft;
+                    if (!notifiedTimers[key]) {
+                        notifiedTimers[key] = true;
+                        changed = true;
+                        var body = daysLeft === 0 ? 'Сегодня!' : 'Осталось ' + daysLeft + ' дн.';
+                        sendNotification('🔔 ' + t.title, body);
+                    }
+                }
+            }
+            // Похвалы для elapsed
+            if (t.type === 'elapsed' && praiseEnabled) {
+                var elapsedDays = (ts - t.date) / dayMs;
+                var days = Math.floor(elapsedDays);
+                if (days > 0 && days % praiseInterval === 0) {
+                    var key2 = 'p_' + t.id + '_' + days;
+                    if (!notifiedTimers[key2]) {
+                        notifiedTimers[key2] = true;
+                        changed = true;
+                        sendNotification('🎉 ' + t.title, declension(days, ['день','дня','дней']) + '! Отличная работа! 💪');
+                    }
+                }
             }
         }
         if (changed) saveNotified();
@@ -286,26 +370,28 @@
         }
         if (changed) { saveTimers(); render(); }
     }
+
+    // ===== Карточки =====
     function createTimerCard(t) {
         var isElapsed = t.type === 'elapsed';
-        var dt = new Date(t.date);
-        var dateStr = dt.toLocaleDateString('ru-RU', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
+        var dateStr = formatDate(t.date);
         var typeLabel = isElapsed ? 'Прошло' : 'Осталось';
         var typeClass = isElapsed ? 'elapsed' : 'countdown';
         var catLabel = '';
         if (t.category && CAT_NAMES[t.category]) {
             catLabel = '<span class="badge cat-tag ' + t.category + '">' + CAT_NAMES[t.category] + '</span>';
         }
-        var recurringLabel = '';
+        var recLabel = '';
         if (t.recurring && REC_NAMES[t.recurring]) {
-            recurringLabel = '<span class="badge recurring-badge">' + REC_NAMES[t.recurring] + '</span>';
+            recLabel = '<span class="badge recurring-badge">' + REC_NAMES[t.recurring] + '</span>';
         }
+        var isMuted = isDnd(t.id);
+        var dndBadge = isMuted ? '<span class="badge dnd-badge">🔇 Тихо</span>' : '';
         var card = document.createElement('div');
-        card.className = 'tc-card';
+        card.className = 'tc-card' + (isMuted ? ' muted' : '');
         card.dataset.id = t.id;
         card.setAttribute('role', 'listitem');
         card.setAttribute('draggable', 'true');
-        // Для доступности добавим aria-live для обновления значения
         card.innerHTML =
             '<div class="tc-swipe-actions">' +
                 '<button class="tc-swipe-edit" data-id="' + t.id + '" aria-label="Редактировать">' +
@@ -323,40 +409,85 @@
                     '<div class="tc-row-top">' +
                         '<div class="tc-title">' + esc(t.title) + '</div>' +
                         '<div class="tc-actions">' +
+                            '<button class="ibtn-s mute' + (isMuted ? ' active' : '') + '" data-id="' + t.id + '" title="' + (isMuted ? 'Включить уведомления' : 'Не беспокоить') + '">' + (isMuted ? ICONS.mute : ICONS.bell) + '</button>' +
                             '<button class="ibtn-s ed" data-id="' + t.id + '" title="Редактировать"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg></button>' +
                             '<button class="ibtn-s dl" data-id="' + t.id + '" title="Удалить"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>' +
                             '<button class="ibtn-s dup" data-id="' + t.id + '" title="Дублировать"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>' +
                         '</div>' +
                     '</div>' +
-                    '<div class="tc-badges">' + catLabel + recurringLabel + '<span class="badge tc-type ' + typeClass + '">' + typeLabel + '</span></div>' +
+                    '<div class="tc-badges">' + catLabel + recLabel + dndBadge + '<span class="badge tc-type ' + typeClass + '">' + typeLabel + '</span></div>' +
                     '<div class="tc-counter"><div class="tc-counter-val" data-ts="' + t.date + '" data-type="' + t.type + '" style="color:' + t.color + '" aria-live="polite" aria-atomic="true"></div></div>' +
                     '<div class="tc-date"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' + dateStr + '</div>' +
                 '</div>' +
             '</div>';
         return card;
     }
-    function render() {
-        var list = el.timerList;
-        var empty = el.empty;
-        var filtered = timers.slice();
-        if (filter !== 'all') filtered = filtered.filter(function(x) { return x.type === filter; });
+
+    function observeCard(card) {
+        if (!intersectionObserver) return;
+        intersectionObserver.observe(card);
+    }
+
+    function updateCardCounter(card) {
+        var el = card.querySelector('.tc-counter-val');
+        if (!el) return;
+        var ts = parseInt(el.dataset.ts);
+        var tp = el.dataset.type;
+        if (ts) el.textContent = fmtCounter(ts, tp);
+    }
+
+    // ===== Рендер =====
+    function getFiltered() {
+        var f = timers.slice();
+        if (filter !== 'all') f = f.filter(function(x) { return x.type === filter; });
         if (categoryFilter !== 'all') {
-            if (categoryFilter === '') filtered = filtered.filter(function(x) { return !x.category; });
-            else filtered = filtered.filter(function(x) { return x.category === categoryFilter; });
+            if (categoryFilter === '') f = f.filter(function(x) { return !x.category; });
+            else f = f.filter(function(x) { return x.category === categoryFilter; });
         }
         if (searchQuery) {
             var q = searchQuery.toLowerCase();
-            filtered = filtered.filter(function(x) { return x.title.toLowerCase().indexOf(q) !== -1; });
+            f = f.filter(function(x) { return x.title.toLowerCase().indexOf(q) !== -1; });
         }
-        if (sortBy === 'name') filtered.sort(function(a,b) { return a.title.localeCompare(b.title, 'ru'); });
-        else if (sortBy === 'date') filtered.sort(function(a,b) { return a.date - b.date; });
-        else if (sortBy === 'created') filtered.sort(function(a,b) { return (b.created || 0) - (a.created || 0); });
+        if (sortBy === 'name') f.sort(function(a,b) { return a.title.localeCompare(b.title, 'ru'); });
+        else if (sortBy === 'date') f.sort(function(a,b) { return a.date - b.date; });
+        else if (sortBy === 'created') f.sort(function(a,b) { return (b.created||0) - (a.created||0); });
+        return f;
+    }
+
+    function updateProgressBar(filtered) {
+        var wrap = el.progressBarWrap;
+        if (!wrap) return;
+        var now = Date.now();
+        var countdowns = filtered.filter(function(t) { return t.type === 'countdown' && t.date > now; });
+        if (countdowns.length === 0) { wrap.style.display = 'none'; return; }
+        var nearest = countdowns.reduce(function(a,b) { return a.date < b.date ? a : b; });
+        var total = nearest.date - now;
+        var daysLeft = Math.ceil(total / 86400000);
+        var maxDays = 365;
+        var progress = Math.min(100, Math.max(0, (1 - daysLeft / maxDays) * 100));
+        wrap.style.display = 'block';
+        el.progressLabel.textContent = 'До «' + nearest.title + '» осталось ' + declension(daysLeft, ['день','дня','дней']);
+        el.progressFill.style.width = progress + '%';
+    }
+
+    function render() {
+        var list = el.timerList;
+        var empty = el.empty;
+        var filtered = getFiltered();
         updateFilterButtonState();
+        updateProgressBar(filtered);
+
+        // Отписываем старые карточки
+        if (intersectionObserver) {
+            intersectionObserver.disconnect();
+            visibleCards.clear();
+        }
+
         if (filtered.length === 0) {
             list.innerHTML = '';
             empty.classList.remove('hidden');
             empty.querySelector('h3').textContent = 'Каждый день на счету';
-            empty.querySelector('p').textContent = 'Не курю 45 дней. До отпуска 128 дней. На новой работе 2 года. Создайте свой первый счётчик и начните считать то, что важно именно вам.';
+            empty.querySelector('p').textContent = 'Не курю 45 дней. До отпуска 128 дней. На работе 2 года. Создайте свой первый счётчик.';
             empty.querySelector('.btn-p').textContent = 'Создать счётчик';
             empty.querySelector('.btn-p').onclick = openModal;
             return;
@@ -364,19 +495,65 @@
         empty.classList.add('hidden');
         var sectionHdr = document.querySelector('.section-hdr');
         if (sectionHdr) sectionHdr.classList.remove('shifted');
-        var frag = document.createDocumentFragment();
-        for (var i = 0; i < filtered.length; i++) {
-            var card = createTimerCard(filtered[i]);
-            frag.appendChild(card);
-        }
+
+        var useGroups = groupByCategory && sortBy === 'order' && filtered.length > 1;
         list.innerHTML = '';
-        list.appendChild(frag);
-        if (!_firstRenderDone) _firstRenderDone = true;
-        else {
-            var cards = list.querySelectorAll('.tc-card');
-            for (var c = 0; c < cards.length; c++) cards[c].classList.add('no-anim');
+        if (useGroups) {
+            var groups = {};
+            filtered.forEach(function(t) {
+                var c = t.category || '_none';
+                if (!groups[c]) groups[c] = [];
+                groups[c].push(t);
+            });
+            var cats = Object.keys(groups).sort(function(a,b) {
+                if (a === '_none') return 1;
+                if (b === '_none') return -1;
+                return a.localeCompare(b);
+            });
+            cats.forEach(function(cat) {
+                var items = groups[cat];
+                var catName = cat === '_none' ? 'Без категории' : (CAT_NAMES[cat] || cat);
+                var isOpen = _categoriesOpen[cat] !== false;
+                var gEl = document.createElement('div');
+                gEl.className = 'category-group';
+                gEl.dataset.category = cat;
+                var hdr = document.createElement('div');
+                hdr.className = 'category-header';
+                hdr.innerHTML = '<span class="cat-name">' + esc(catName) + '</span>' +
+                    '<span class="cat-count">' + items.length + '</span>' +
+                    '<span class="cat-toggle' + (isOpen ? ' open' : '') + '">▶</span>';
+                var body = document.createElement('div');
+                body.className = 'category-body' + (isOpen ? ' open' : '');
+                items.forEach(function(t) { body.appendChild(createTimerCard(t)); });
+                hdr.addEventListener('click', function() {
+                    var tg = hdr.querySelector('.cat-toggle');
+                    var o = tg.classList.toggle('open');
+                    body.classList.toggle('open', o);
+                    _categoriesOpen[cat] = o;
+                });
+                gEl.appendChild(hdr);
+                gEl.appendChild(body);
+                list.appendChild(gEl);
+            });
+        } else {
+            var frag = document.createDocumentFragment();
+            for (var i = 0; i < filtered.length; i++) {
+                var card = createTimerCard(filtered[i]);
+                frag.appendChild(card);
+            }
+            list.appendChild(frag);
         }
+        // Подписываем карточки
+        var cards = list.querySelectorAll('.tc-card');
+        for (var c = 0; c < cards.length; c++) {
+            observeCard(cards[c]);
+            if (_firstRenderDone) cards[c].classList.add('no-anim');
+        }
+        _firstRenderDone = true;
+        // Обновим счётчики сразу для тех, кто уже виден
+        for (var k = 0; k < cards.length; k++) updateCardCounter(cards[k]);
     }
+
     function updateFilterButtonState() {
         var btn = el.filterBtn;
         if (!btn) return;
@@ -388,9 +565,10 @@
             btn.style.color = '';
         }
     }
+
+    // ===== Модалки и фокус =====
     function dismissModal(m) {
         m.classList.remove('show');
-        // Убираем inert с основного контента
         document.querySelector('main').removeAttribute('inert');
         releaseFocus();
         if (lastFocus) lastFocus.focus();
@@ -398,25 +576,21 @@
     function trapFocus(container) {
         var focusable = container.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');
         if (!focusable.length) return;
-        var first = focusable[0], last = focusable[focusable.length - 1];
+        var first = focusable[0], last = focusable[focusable.length-1];
         focusTrap = function(e) {
             if (e.key !== 'Tab') return;
-            if (e.shiftKey) {
-                if (document.activeElement === first) { e.preventDefault(); last.focus(); }
-            } else {
-                if (document.activeElement === last) { e.preventDefault(); first.focus(); }
-            }
+            if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
+            else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
         };
         document.addEventListener('keydown', focusTrap);
-        // Добавляем inert для основного контента
         document.querySelector('main').setAttribute('inert', '');
     }
     function releaseFocus() {
         if (focusTrap) { document.removeEventListener('keydown', focusTrap); focusTrap = null; }
     }
     function openModal() {
-        if (el.timerTitle) el.timerTitle.classList.remove('error');
-        if (el.timerDate) el.timerDate.classList.remove('error');
+        el.timerTitle.classList.remove('error');
+        el.timerDate.classList.remove('error');
         editId = null;
         el.mTitle.textContent = 'Новый счётчик';
         el.timerTitle.value = '';
@@ -437,8 +611,7 @@
     }
     function closeModal() {
         dismissModal(el.timerModal);
-        var hslPopup = document.getElementById('hslPopup');
-        if (hslPopup) hslPopup.classList.remove('show');
+        var hp = $('hslPopup'); if (hp) hp.classList.remove('show');
     }
     function openSettings() {
         lastFocus = document.activeElement;
@@ -447,442 +620,16 @@
         trapFocus(el.sModal);
     }
     function closeSettings() { dismissModal(el.sModal); }
-    function bindEvents() {
-        document.addEventListener('click', function(e) {
-            var closeBtn = e.target.closest('[data-close-modal]');
-            if (closeBtn) {
-                var modalId = closeBtn.dataset.closeModal;
-                var modal = document.getElementById(modalId);
-                if (modal) dismissModal(modal);
-                if (modalId === 'sModal') closeSettings();
-                history.back();
-                return;
-            }
-            var backdrop = e.target.closest('.modal.show');
-            if (backdrop && !e.target.closest('.mc')) {
-                dismissModal(backdrop);
-                if (backdrop.id === 'sModal') closeSettings();
-                history.back();
-            }
-        });
-        if (el.addFirstBtn) el.addFirstBtn.onclick = openModal;
-        if (el.addTimerBtn) el.addTimerBtn.onclick = function() { haptic('light'); openModal(); };
-        if (el.timerForm) el.timerForm.onsubmit = function(e) { e.preventDefault(); saveTimer(); };
-        if (el.saveMoreBtn) el.saveMoreBtn.onclick = function() { saveTimer(true); };
-        if (el.timerTitle) el.timerTitle.oninput = function() {
-            var l = el.timerTitle.value.length;
-            if (l > MAX_TITLE) el.timerTitle.value = el.timerTitle.value.slice(0, MAX_TITLE);
-            el.titleCnt.textContent = Math.min(l, MAX_TITLE) + '/' + MAX_TITLE;
-        };
-        if (el.datePickerBtn) el.datePickerBtn.onclick = function() {
-            el.timerDate.showPicker ? el.timerDate.showPicker() : el.timerDate.click();
-        };
-        if (el.resetTimeBtn) el.resetTimeBtn.onclick = function() {
-            el.timerDate.value = localISO(new Date());
-            autoDetectType();
-            haptic('light');
-        };
-        if (el.timerDate) el.timerDate.addEventListener('change', autoDetectType);
-        var colorPick = document.getElementById('colorPick');
-        var customColorBtn = document.getElementById('customColorBtn');
-        var hslPopup = document.getElementById('hslPopup');
-        var hslH = document.getElementById('hslH'), hslS = document.getElementById('hslS'), hslL = document.getElementById('hslL');
-        var hslHVal = document.getElementById('hslHVal'), hslSVal = document.getElementById('hslSVal'), hslLVal = document.getElementById('hslLVal');
-        var hslPreview = document.getElementById('hslPreview'), hslApply = document.getElementById('hslApply');
-        function updateHslPopup() {
-            var h = parseInt(hslH.value), s = parseInt(hslS.value), l = parseInt(hslL.value);
-            hslHVal.textContent = h; hslSVal.textContent = s; hslLVal.textContent = l;
-            var hex = hslToHex(h,s,l);
-            if (hslPreview) hslPreview.style.background = hex;
-        }
-        function openHslPopup(color) {
-            var hsl = hexToHsl(color);
-            hslH.value = hsl.h; hslS.value = hsl.s; hslL.value = hsl.l;
-            updateHslPopup();
-            hslPopup.classList.add('show');
-        }
-        if (hslH) hslH.oninput = updateHslPopup;
-        if (hslS) hslS.oninput = updateHslPopup;
-        if (hslL) hslL.oninput = updateHslPopup;
-        if (hslApply) hslApply.onclick = function() {
-            var hex = hslToHex(parseInt(hslH.value), parseInt(hslS.value), parseInt(hslL.value));
-            selectedColor = hex;
-            selectColor(hex);
-            hslPopup.classList.remove('show');
-            haptic('light');
-        };
-        if (colorPick) colorPick.onclick = function(e) {
-            var cp = e.target.closest('.cp');
-            if (!cp) return;
-            if (cp === customColorBtn) { openHslPopup(selectedColor); return; }
-            selectedColor = cp.dataset.c;
-            var all = colorPick.querySelectorAll('.cp');
-            for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
-            cp.classList.add('active');
-        };
-        var filterBtn = $('filterBtn');
-        if (filterBtn) filterBtn.onclick = function() {
-            if (el.sortSelect) el.sortSelect.value = sortBy;
-            if (el.catSelect) el.catSelect.value = categoryFilter;
-            var fs = $('fSelect');
-            if (fs) fs.value = filter;
-            el.fModal.classList.add('show');
-            trapFocus(el.fModal);
-        };
-        var applyFBtn = $('applyFBtn');
-        if (applyFBtn) applyFBtn.onclick = function() {
-            var fs = $('fSelect');
-            if (fs) filter = fs.value;
-            if (el.sortSelect) sortBy = el.sortSelect.value;
-            if (el.catSelect) categoryFilter = el.catSelect.value;
-            saveSettings();
-            el.fModal.classList.remove('show');
-            releaseFocus();
-            render();
-        };
-        var exportImgBtn = $('exportImgBtn');
-        if (exportImgBtn) exportImgBtn.onclick = function() {
-            el.fModal.classList.remove('show');
-            releaseFocus();
-            exportImage();
-        };
-        if (el.searchBtn) {
-            el.searchBtn.onclick = function() {
-                haptic('light');
-                var isOpen = el.searchBar.classList.toggle('open');
-                el.searchBtn.classList.toggle('active', isOpen);
-                if (isOpen) { setTimeout(function() { el.searchInput.focus(); }, 200); }
-                else { el.searchInput.value = ''; searchQuery = ''; if (el.searchClear) el.searchClear.classList.add('hidden'); render(); }
-            };
-        }
-        if (el.searchInput) {
-            el.searchInput.oninput = function() {
-                searchQuery = this.value.trim();
-                if (el.searchClear) el.searchClear.classList.toggle('hidden', !searchQuery);
-                render();
-            };
-            el.searchInput.onkeydown = function(e) { if (e.key === 'Escape') { el.searchBtn.click(); } };
-        }
-        if (el.searchClear) {
-            el.searchClear.onclick = function() {
-                el.searchInput.value = '';
-                searchQuery = '';
-                this.classList.add('hidden');
-                render();
-            };
-        }
-        if (el.catSelect) el.catSelect.onchange = function() { categoryFilter = el.catSelect.value; render(); };
-        var clearBtn = $('clearBtn');
-        if (clearBtn) clearBtn.onclick = function() {
-            showConfirm('Очистить всё', 'Удалить все счётчики?', 'Удалить', function() {
-                timers = [];
-                notifiedTimers = {};
-                saveNotified();
-                saveTimers();
-                render();
-                toast.info('Очищено');
-            });
-        };
-        requestNotifPermission();
-        var exportBtn = $('exportBtn');
-        if (exportBtn) exportBtn.onclick = exportJSON;
-        var importBtn = $('importBtn');
-        if (importBtn) importBtn.onclick = importTimers;
-        if (el.importFile) el.importFile.onchange = handleImport;
-        if (el.themeSel) el.themeSel.onchange = function() { applyTheme(el.themeSel.value); saveSettings(); };
-        if (el.animToggle) el.animToggle.onchange = function() { anims = el.animToggle.checked; applyAnimPref(); saveSettings(); };
-        var srRows = document.querySelectorAll('.sr:has(.sw)');
-        for (var i = 0; i < srRows.length; i++) {
-            srRows[i].addEventListener('click', function(e) {
-                if (e.target.closest('.sw') || e.target.tagName === 'INPUT') return;
-                var input = this.querySelector('.sw input');
-                if (input) {
-                    input.checked = !input.checked;
-                    input.dispatchEvent(new Event('change', { bubbles: true }));
-                    haptic('light');
-                }
-            });
-        }
-        if (el.timerList) {
-            el.timerList.addEventListener('click', function(e) {
-                var btn = e.target.closest('.ibtn-s');
-                if (!btn || btn.closest('.tc-handle')) return;
-                var id = btn.dataset.id;
-                haptic('light');
-                if (btn.classList.contains('ed')) editTimer(id);
-                else if (btn.classList.contains('dl')) delTimer(id);
-                else if (btn.classList.contains('dup')) {
-                    var orig = timers.find(function(x) { return x.id === id; });
-                    if (orig) {
-                        var copy = JSON.parse(JSON.stringify(orig));
-                        copy.id = genId();
-                        copy.title = orig.title + ' (копия)';
-                        copy.created = Date.now();
-                        timers.push(copy);
-                        saveTimers();
-                        render();
-                        toast.success('Счётчик дублирован');
-                        haptic('success');
-                    }
-                }
-            });
-        }
-        document.querySelectorAll('.quick-date').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                var offset = parseInt(this.dataset.offset);
-                var now = new Date();
-                now.setDate(now.getDate() + offset);
-                el.timerDate.value = localISO(now);
-                autoDetectType();
-                haptic('light');
-            });
-        });
-        var tplGrid = document.querySelector('.tpl-grid');
-        if (tplGrid) {
-            tplGrid.addEventListener('click', function(e) {
-                var btn = e.target.closest('.tpl-btn');
-                if (!btn) return;
-                var tpl = TPL_DATA[btn.dataset.tpl];
-                if (!tpl) return;
-                el.fModal.classList.remove('show');
-                releaseFocus();
-                editId = null;
-                el.mTitle.textContent = 'Новый счётчик';
-                el.timerTitle.value = tpl.title;
-                var now = new Date();
-                if (tpl.type === 'countdown') now.setDate(now.getDate() + 30);
-                el.timerDate.value = localISO(now);
-                if (el.timerType) el.timerType.value = tpl.type;
-                if (el.timerCategory) el.timerCategory.value = tpl.category || '';
-                if (el.timerRecurring) el.timerRecurring.value = tpl.recurring || '';
-                if (el.timerReminder) el.timerReminder.checked = tpl.reminder || false;
-                el.titleCnt.textContent = tpl.title.length + '/' + MAX_TITLE;
-                selectedColor = tpl.color;
-                selectColor(selectedColor);
-                if (el.saveMoreRow) el.saveMoreRow.style.display = 'none';
-                lastFocus = document.activeElement;
-                history.pushState({ modal: true }, '');
-                el.timerModal.classList.add('show');
-                trapFocus(el.timerModal);
-                setTimeout(function() { el.timerTitle.focus(); }, 100);
-            });
-        }
-        var settingsBtn = $('settingsBtn');
-        if (settingsBtn) settingsBtn.onclick = function() { haptic('light'); openSettings(); };
-        if (el.timerList) {
-            el.timerList.addEventListener('dragstart', function(e) {
-                var handle = e.target.closest('.tc-handle');
-                if (!handle) { e.preventDefault(); return; }
-                var card = handle.closest('.tc-card');
-                if (!card) return;
-                dragSrcId = card.dataset.id;
-                card.classList.add('dragging');
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', card.dataset.id);
-            });
-            el.timerList.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-                var card = e.target.closest('.tc-card');
-                if (!card || card.dataset.id === dragSrcId) return;
-                clearDragIndicators();
-                var rect = card.getBoundingClientRect();
-                var mid = rect.top + rect.height / 2;
-                if (e.clientY < mid) card.classList.add('drag-over-top');
-                else card.classList.add('drag-over-bottom');
-            });
-            el.timerList.addEventListener('dragleave', function(e) {
-                var card = e.target.closest('.tc-card');
-                if (card) { card.classList.remove('drag-over-top', 'drag-over-bottom'); }
-            });
-            el.timerList.addEventListener('drop', function(e) {
-                e.preventDefault();
-                var targetCard = e.target.closest('.tc-card');
-                if (!targetCard || !dragSrcId) return;
-                var targetId = targetCard.dataset.id;
-                if (targetId === dragSrcId) return;
-                var rect = targetCard.getBoundingClientRect();
-                var mid = rect.top + rect.height / 2;
-                var insertBefore = e.clientY < mid;
-                reorderTimers(dragSrcId, targetId, insertBefore);
-                clearDragIndicators();
-            });
-            el.timerList.addEventListener('dragend', function() {
-                dragSrcId = null;
-                clearDragIndicators();
-            });
-        }
-        // Улучшенная обработка долгого нажатия на мобильных
-        if (el.timerList && isTouch) {
-            var longPressTimer = null;
-            var isLongPress = false;
-            var longPressStartX = 0, longPressStartY = 0;
-            var longPressCard = null, longPressClone = null, longPressActive = false;
-            var longPressThreshold = 350;
-            var moveThreshold = 12;
 
-            function startLongPressDrag(card, touch) {
-                if (longPressActive) return;
-                longPressActive = true;
-                longPressCard = card;
-                longPressClone = card.cloneNode(true);
-                longPressClone.className = 'tc-card touch-clone';
-                longPressClone.style.cssText = 'position:fixed;z-index:5000;pointer-events:none;width:' + card.offsetWidth + 'px;opacity:.85;transform:rotate(2deg);';
-                longPressClone.style.left = (touch.clientX - longPressClone.offsetWidth/2) + 'px';
-                longPressClone.style.top = (touch.clientY - 20) + 'px';
-                document.body.appendChild(longPressClone);
-                card.classList.add('dragging');
-                card.style.transition = 'none';
-                haptic('medium');
-            }
-
-            function moveLongPressDrag(touch) {
-                if (!longPressClone) return;
-                longPressClone.style.left = (touch.clientX - longPressClone.offsetWidth/2) + 'px';
-                longPressClone.style.top = (touch.clientY - 20) + 'px';
-                longPressClone.style.display = 'none';
-                var elUnder = document.elementFromPoint(touch.clientX, touch.clientY);
-                longPressClone.style.display = '';
-                var targetCard = elUnder ? elUnder.closest('.tc-card') : null;
-                clearDragIndicators();
-                if (targetCard && targetCard !== longPressCard) {
-                    var rect = targetCard.getBoundingClientRect();
-                    var mid = rect.top + rect.height/2;
-                    if (touch.clientY < mid) targetCard.classList.add('drag-over-top');
-                    else targetCard.classList.add('drag-over-bottom');
-                }
-            }
-
-            function endLongPressDrag() {
-                if (!longPressActive) return;
-                longPressActive = false;
-                if (longPressCard) {
-                    longPressCard.classList.remove('dragging');
-                    longPressCard.style.transition = '';
-                }
-                if (longPressClone && longPressClone.parentNode) {
-                    longPressClone.parentNode.removeChild(longPressClone);
-                }
-                longPressClone = null;
-                var overCard = el.timerList.querySelector('.drag-over-top, .drag-over-bottom');
-                if (overCard && longPressCard) {
-                    var insertBefore = overCard.classList.contains('drag-over-top');
-                    reorderTimers(longPressCard.dataset.id, overCard.dataset.id, insertBefore);
-                }
-                clearDragIndicators();
-                longPressCard = null;
-                longPressClone = null;
-            }
-
-            el.timerList.addEventListener('touchstart', function(e) {
-                var handle = e.target.closest('.tc-handle');
-                if (!handle) return;
-                var card = handle.closest('.tc-card');
-                if (!card) return;
-                if (e.target.closest('.tc-actions button') || e.target.closest('.tc-swipe-actions button')) return;
-                var touch = e.touches[0];
-                longPressStartX = touch.clientX;
-                longPressStartY = touch.clientY;
-                longPressCard = card;
-                isLongPress = false;
-                clearTimeout(longPressTimer);
-                longPressTimer = setTimeout(function() {
-                    isLongPress = true;
-                    startLongPressDrag(card, touch);
-                    e.preventDefault();
-                }, longPressThreshold);
-            }, { passive: false });
-
-            el.timerList.addEventListener('touchmove', function(e) {
-                if (!longPressCard) return;
-                var touch = e.touches[0];
-                var dx = touch.clientX - longPressStartX;
-                var dy = touch.clientY - longPressStartY;
-                if (isLongPress) {
-                    e.preventDefault();
-                    moveLongPressDrag(touch);
-                    return;
-                }
-                if (Math.abs(dx) > moveThreshold || Math.abs(dy) > moveThreshold) {
-                    clearTimeout(longPressTimer);
-                    longPressCard = null;
-                }
-            }, { passive: false });
-
-            el.timerList.addEventListener('touchend', function(e) {
-                clearTimeout(longPressTimer);
-                if (isLongPress) { endLongPressDrag(); isLongPress = false; longPressCard = null; }
-                else { longPressCard = null; }
-            });
-
-            el.timerList.addEventListener('touchcancel', function() {
-                clearTimeout(longPressTimer);
-                if (isLongPress) { endLongPressDrag(); isLongPress = false; }
-                longPressCard = null;
-            });
-        }
-        initPullToRefresh();
-        initCardSwipe();
-        initModalSwipe();
-        window.onoffline = function() {
-            if (el.offlineDot) el.offlineDot.classList.add('show');
-            toast.error('Нет соединения');
-        };
-        window.ononline = function() {
-            if (el.offlineDot) el.offlineDot.classList.remove('show');
-            toast.success('Соединение восстановлено');
-        };
-        if (!navigator.onLine && el.offlineDot) el.offlineDot.classList.add('show');
-        document.onkeydown = function(e) {
-            if (e.key === 'Escape') {
-                var ms = document.querySelectorAll('.modal.show');
-                if (ms.length) {
-                    ms.forEach(function(m) { dismissModal(m); });
-                    history.back();
-                }
-            }
-        };
-        window.onpopstate = function(e) {
-            if (!e.state || !e.state.modal) {
-                var ms = document.querySelectorAll('.modal.show');
-                if (ms.length) { ms.forEach(function(m) { dismissModal(m); }); }
-            }
-        };
-        // Синхронизация между вкладками
-        window.addEventListener('storage', function(e) {
-            if (e.key === STORAGE_TIMERS) {
-                loadTimers();
-                render();
-            } else if (e.key === STORAGE_SETTINGS) {
-                loadSettings();
-            } else if (e.key === STORAGE_NOTIFIED) {
-                loadNotified();
-            }
-        });
-    }
+    // ===== CRUD =====
     function saveTimer(more) {
         var title = el.timerTitle.value.trim();
         var dateVal = el.timerDate.value;
         var type = el.timerType ? el.timerType.value : 'elapsed';
-        if (!title) {
-            el.timerTitle.classList.add('error');
-            toast.error('Введите название');
-            setTimeout(function() { el.timerTitle.classList.remove('error'); }, 500);
-            return;
-        }
-        if (!dateVal) {
-            el.timerDate.classList.add('error');
-            toast.error('Укажите дату');
-            setTimeout(function() { el.timerDate.classList.remove('error'); }, 500);
-            return;
-        }
+        if (!title) { el.timerTitle.classList.add('error'); toast.error('Введите название'); setTimeout(function() { el.timerTitle.classList.remove('error'); },500); return; }
+        if (!dateVal) { el.timerDate.classList.add('error'); toast.error('Укажите дату'); setTimeout(function() { el.timerDate.classList.remove('error'); },500); return; }
         var timestamp = new Date(dateVal).getTime();
-        if (isNaN(timestamp)) {
-            el.timerDate.classList.add('error');
-            toast.error('Некорректная дата');
-            setTimeout(function() { el.timerDate.classList.remove('error'); }, 500);
-            return;
-        }
+        if (isNaN(timestamp)) { el.timerDate.classList.add('error'); toast.error('Некорректная дата'); setTimeout(function() { el.timerDate.classList.remove('error'); },500); return; }
         if (editId) {
             var idx = timers.findIndex(function(x) { return x.id === editId; });
             if (idx !== -1) {
@@ -898,12 +645,8 @@
             toast.info('Обновлено');
         } else {
             timers.push({
-                id: genId(),
-                title: title,
-                date: timestamp,
-                type: type,
-                color: selectedColor,
-                created: Date.now(),
+                id: genId(), title: title, date: timestamp, type: type,
+                color: selectedColor, created: Date.now(),
                 category: el.timerCategory ? el.timerCategory.value : '',
                 recurring: el.timerRecurring ? el.timerRecurring.value : '',
                 reminder: el.timerReminder ? el.timerReminder.checked : false,
@@ -920,9 +663,7 @@
             selectedColor = DEFAULT_COLOR;
             selectColor(selectedColor);
             setTimeout(function() { el.timerTitle.focus(); }, 100);
-        } else {
-            closeModal();
-        }
+        } else closeModal();
         render();
     }
     function editTimer(id) {
@@ -954,25 +695,27 @@
         timers.splice(idx, 1);
         delete notifiedTimers[id];
         delete notifiedTimers[id + '_done'];
+        delete dnd[id];
         saveNotified();
+        saveDnd();
         lastDel = { timer: timer };
         var card = el.timerList.querySelector('.tc-card[data-id="' + id + '"]');
         if (card) {
+            if (intersectionObserver) intersectionObserver.unobserve(card);
+            visibleCards.delete(card);
             card.classList.add('removing');
             setTimeout(function() { saveTimers(); render(); showUndo(); }, 300);
-        } else {
-            saveTimers(); render(); showUndo();
-        }
+        } else { saveTimers(); render(); showUndo(); }
     }
     function showUndo() {
-        var t = document.getElementById('undoToast');
+        var t = $('undoToast');
         if (!t) {
             t = document.createElement('div');
             t.id = 'undoToast';
             t.className = 'toast undo-toast';
             t.innerHTML = '<span>Удалено</span><button class="undo-btn" id="undoBtn">Отменить</button>';
             document.body.appendChild(t);
-            document.getElementById('undoBtn').onclick = undo;
+            $('undoBtn').onclick = undo;
         }
         clearTimeout(undoTimer);
         t.classList.add('show');
@@ -980,17 +723,22 @@
     }
     function undo() {
         if (!lastDel) return;
-        var existingIdx = timers.findIndex(function(x) { return x.id === lastDel.timer.id; });
-        if (existingIdx !== -1) timers[existingIdx] = lastDel.timer;
+        var i = timers.findIndex(function(x) { return x.id === lastDel.timer.id; });
+        if (i !== -1) timers[i] = lastDel.timer;
         else timers.push(lastDel.timer);
         lastDel = null;
         clearTimeout(undoTimer);
-        var t = document.getElementById('undoToast');
-        if (t) t.classList.remove('show');
-        saveTimers();
-        render();
+        var t = $('undoToast'); if (t) t.classList.remove('show');
+        saveTimers(); render();
         haptic('light');
         toast.success('Восстановлено');
+    }
+    function toggleDnd(id) {
+        if (isDnd(id)) { delete dnd[id]; toast.info('Уведомления включены'); }
+        else { dnd[id] = Date.now() + DND_DURATION; toast.success('Уведомления отключены на 24 ч'); }
+        saveDnd();
+        haptic('light');
+        render();
     }
     function showConfirm(title, msg, okText, cb) {
         var m = el.confirmModal;
@@ -1003,6 +751,8 @@
         $('confirmOk').onclick = function() { dismissModal(m); cb(); };
         $('confirmCancel').onclick = function() { dismissModal(m); };
     }
+
+    // ===== Экспорт =====
     function exportJSON() {
         if (!timers.length) { toast.error('Нет данных'); return; }
         var blob = new Blob([JSON.stringify(timers, null, 2)], { type: 'application/json' });
@@ -1012,11 +762,88 @@
         a.download = 'chronoflow-' + new Date().toISOString().slice(0,10) + '.json';
         a.click();
         URL.revokeObjectURL(url);
-        haptic('success');
-        toast.success('Экспортировано');
+        haptic('success'); toast.success('Экспортировано');
     }
+    function exportICS() {
+        if (!timers.length) { toast.error('Нет данных'); return; }
+        var ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//ChronoFlow//RU\r\nCALSCALE:GREGORIAN\r\n';
+        timers.forEach(function(t) {
+            var dt = new Date(t.date).toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+            ics += 'BEGIN:VEVENT\r\nUID:' + t.id + '@chronoflow\r\nDTSTAMP:' + dt + '\r\nDTSTART:' + dt + '\r\nSUMMARY:' + t.title.replace(/[\\;,]/g, '\\$&') + '\r\n';
+            if (t.category) ics += 'CATEGORIES:' + (CAT_NAMES[t.category] || t.category) + '\r\n';
+            ics += 'END:VEVENT\r\n';
+        });
+        ics += 'END:VCALENDAR';
+        var blob = new Blob([ics], { type: 'text/calendar' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'chronoflow-events.ics';
+        a.click();
+        URL.revokeObjectURL(url);
+        haptic('success'); toast.success('Календарь экспортирован');
+    }
+    function exportImage() {
+        var card = el.timerList.querySelector('.tc-card');
+        if (!card) { toast.error('Нет счётчиков'); return; }
+        var cvs = document.createElement('canvas');
+        cvs.width = 800; cvs.height = 600;
+        var c = cvs.getContext('2d');
+        c.fillStyle = '#000'; c.fillRect(0,0,800,600);
+        var grad = c.createLinearGradient(0,0,800,600);
+        grad.addColorStop(0, '#0a84ff'); grad.addColorStop(1, '#5e5ce6');
+        c.fillStyle = grad; c.globalAlpha = 0.15; c.fillRect(0,0,800,600);
+        c.globalAlpha = 1; c.fillStyle = '#fff';
+        c.font = '700 36px -apple-system, sans-serif';
+        c.textAlign = 'center';
+        c.fillText('ChronoFlow', 400, 60);
+        c.font = '400 16px -apple-system, sans-serif';
+        c.fillStyle = 'rgba(255,255,255,0.6)';
+        c.fillText(new Date().toLocaleDateString('ru-RU', { year:'numeric', month:'long', day:'numeric' }), 400, 90);
+        var items = el.timerList.querySelectorAll('.tc-card');
+        var y = 130;
+        var count = Math.min(items.length, 8);
+        for (var i = 0; i < count; i++) {
+            var elc = items[i].querySelector('.tc-counter-val');
+            var titleEl = items[i].querySelector('.tc-title');
+            var typeEl = items[i].querySelector('.tc-type');
+            if (!elc || !titleEl) continue;
+            c.fillStyle = 'rgba(255,255,255,0.08)';
+            c.beginPath(); c.roundRect(40, y, 720, 50, 12); c.fill();
+            c.fillStyle = '#fff';
+            c.font = '600 15px -apple-system, sans-serif';
+            c.textAlign = 'left';
+            c.fillText(titleEl.textContent, 60, y + 22);
+            c.fillStyle = elc.style.color || '#fff';
+            c.font = '300 18px monospace';
+            c.textAlign = 'right';
+            c.fillText(elc.textContent, 740, y + 28);
+            if (typeEl) {
+                c.fillStyle = 'rgba(255,255,255,0.4)';
+                c.font = '600 10px -apple-system, sans-serif';
+                c.fillText(typeEl.textContent, 740, y + 44);
+            }
+            y += 58;
+        }
+        if (items.length > 8) {
+            c.fillStyle = 'rgba(255,255,255,0.3)';
+            c.font = '12px -apple-system, sans-serif';
+            c.textAlign = 'right';
+            c.fillText('и ещё ' + (items.length - 8), 760, y + 10);
+        }
+        cvs.toBlob(function(blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'chronoflow-' + new Date().toISOString().slice(0,10) + '.png';
+            a.click();
+            URL.revokeObjectURL(url);
+            haptic('success'); toast.success('Изображение сохранено');
+        });
+    }
+
+    // ===== Импорт =====
     function importTimers() { el.importFile.click(); }
-    // Усиленная валидация импорта
     function isValidTimer(obj) {
         if (!obj || typeof obj !== 'object') return false;
         if (typeof obj.title !== 'string' || obj.title.trim() === '') return false;
@@ -1024,11 +851,8 @@
         if (typeof obj.id !== 'string' || obj.id.trim() === '') return false;
         if (obj.type && typeof obj.type !== 'string') return false;
         if (obj.color && !/^#[0-9a-fA-F]{6}$/.test(obj.color)) return false;
-        if (obj.category && typeof obj.category !== 'string') return false;
-        if (obj.recurring && !['weekly','monthly','yearly',''].includes(obj.recurring)) return false;
+        if (obj.recurring && ['weekly','monthly','yearly',''].indexOf(obj.recurring) === -1) return false;
         if (obj.reminder !== undefined && typeof obj.reminder !== 'boolean') return false;
-        if (obj.created !== undefined && typeof obj.created !== 'number') return false;
-        if (obj.originalDay !== undefined && typeof obj.originalDay !== 'number') return false;
         return true;
     }
     function handleImport(e) {
@@ -1040,23 +864,19 @@
                 var data = JSON.parse(ev.target.result);
                 if (!Array.isArray(data)) throw new Error('Данные должны быть массивом');
                 var valid = data.filter(isValidTimer);
-                if (!valid.length) {
-                    var invalidCount = data.length - valid.length;
-                    throw new Error('Обнаружено ' + invalidCount + ' невалидных записей. Проверьте структуру данных.');
-                }
-                var total = valid.length;
-                showConfirm('Импорт', 'Импортировать ' + total + ' счётчиков?', 'Импортировать', function() {
-                    var existingIds = {};
-                    for (var i = 0; i < timers.length; i++) existingIds[timers[i].id] = true;
-                    var newTimers = valid.filter(function(x) { return !existingIds[x.id]; });
-                    var skipped = total - newTimers.length;
-                    timers = timers.concat(newTimers);
+                if (!valid.length) throw new Error('Нет валидных записей');
+                showConfirm('Импорт', 'Импортировать ' + valid.length + ' счётчиков?', 'Импортировать', function() {
+                    var ids = {};
+                    timers.forEach(function(x) { ids[x.id] = true; });
+                    var newT = valid.filter(function(x) { return !ids[x.id]; });
+                    var skipped = valid.length - newT.length;
+                    timers = timers.concat(newT);
                     saveTimers();
                     render();
                     haptic('success');
-                    var msg = 'Импортировано ' + newTimers.length;
-                    if (skipped > 0) msg += ', пропущено дубликатов: ' + skipped;
-                    toast.success(msg);
+                    var m = 'Импортировано ' + newT.length;
+                    if (skipped > 0) m += ', пропущено дублей: ' + skipped;
+                    toast.success(m);
                 });
             } catch (err) {
                 var msg = 'Ошибка импорта: ';
@@ -1068,6 +888,8 @@
         reader.readAsText(f);
         e.target.value = '';
     }
+
+    // ===== Цвет =====
     function hslToHex(h,s,l) {
         s/=100; l/=100;
         var a = s * Math.min(l, 1-l);
@@ -1082,7 +904,8 @@
         var r = parseInt(hex.slice(1,3),16)/255, g = parseInt(hex.slice(3,5),16)/255, b = parseInt(hex.slice(5,7),16)/255;
         var max = Math.max(r,g,b), min = Math.min(r,g,b);
         var h, s, l = (max + min) / 2;
-        if (max === min) { h = s = 0; } else {
+        if (max === min) { h = s = 0; }
+        else {
             var d = max - min;
             s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
             if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
@@ -1100,33 +923,32 @@
             all[i].classList.toggle('active', isMatch);
             if (isMatch) matched = true;
         }
-        var customBtn = document.getElementById('customColorBtn');
-        if (!matched && customBtn) {
+        var cb = $('customColorBtn');
+        if (!matched && cb) {
             for (var j = 0; j < all.length; j++) all[j].classList.remove('active');
-            customBtn.classList.add('active');
-            customBtn.style.setProperty('--c', c);
-            customBtn.style.background = c;
-        } else if (customBtn) {
-            customBtn.classList.remove('active');
-            customBtn.style.background = '';
-            customBtn.style.removeProperty('--c');
+            cb.classList.add('active');
+            cb.style.setProperty('--c', c);
+            cb.style.background = c;
+        } else if (cb) {
+            cb.classList.remove('active');
+            cb.style.background = '';
+            cb.style.removeProperty('--c');
         }
     }
     function autoDetectType() {
         if (!el.timerDate || !el.timerType) return;
-        var val = el.timerDate.value;
-        if (!val) return;
-        var selected = new Date(val).getTime();
-        var now = Date.now();
-        el.timerType.value = selected < now ? 'elapsed' : 'countdown';
+        var v = el.timerDate.value; if (!v) return;
+        el.timerType.value = new Date(v).getTime() < Date.now() ? 'elapsed' : 'countdown';
     }
+
+    // ===== Свайп =====
     function initCardSwipe() {
         if (!el.timerList) return;
-        var activeSwipe = null, startX = 0, startY = 0, swiping = false, isHorizontal = false;
+        var activeSwipe = null, startX = 0, startY = 0, swiping = false, isHor = false;
         function resetSwipe(card) {
             if (!card) return;
-            var content = card.querySelector('.tc-swipe-content');
-            if (content) { content.classList.remove('swiping'); content.style.transform = ''; }
+            var c = card.querySelector('.tc-swipe-content');
+            if (c) { c.classList.remove('swiping'); c.style.transform = ''; }
             if (activeSwipe === card) activeSwipe = null;
         }
         el.timerList.addEventListener('touchstart', function(e) {
@@ -1138,21 +960,19 @@
             if (e.target.closest('.tc-handle') || e.target.closest('.tc-actions button, .tc-swipe-actions button')) return;
             if (activeSwipe && activeSwipe !== wrap) resetSwipe(activeSwipe);
             startX = e.touches[0].clientX; startY = e.touches[0].clientY;
-            swiping = false; isHorizontal = false;
-            activeSwipe = wrap;
+            swiping = false; isHor = false; activeSwipe = wrap;
         }, { passive: true });
         el.timerList.addEventListener('touchmove', function(e) {
             if (!isTouch || !activeSwipe) return;
-            var dx = e.touches[0].clientX - startX;
-            var dy = e.touches[0].clientY - startY;
-            if (!swiping && !isHorizontal) {
+            var dx = e.touches[0].clientX - startX, dy = e.touches[0].clientY - startY;
+            if (!swiping && !isHor) {
                 if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-                    if (Math.abs(dx) > Math.abs(dy)) { isHorizontal = true; swiping = true; }
+                    if (Math.abs(dx) > Math.abs(dy)) { isHor = true; swiping = true; }
                     else { activeSwipe = null; return; }
                 }
                 return;
             }
-            if (!isHorizontal) return;
+            if (!isHor) return;
             e.preventDefault();
             var content = activeSwipe.querySelector('.tc-swipe-content');
             if (!content) return;
@@ -1165,9 +985,8 @@
             var content = activeSwipe.querySelector('.tc-swipe-content');
             if (!content) { activeSwipe = null; return; }
             content.classList.remove('swiping');
-            var transform = content.style.transform;
-            var match = transform.match(/translateX\((-?[\d.]+)px\)/);
-            var dx = match ? parseFloat(match[1]) : 0;
+            var m = content.style.transform.match(/translateX\((-?[\d.]+)px\)/);
+            var dx = m ? parseFloat(m[1]) : 0;
             if (dx < -100) content.style.transform = 'translateX(-144px)';
             else { content.style.transform = ''; activeSwipe = null; }
         }, { passive: true });
@@ -1179,26 +998,150 @@
             if (!e.target.closest('.tc-card')) { resetSwipe(activeSwipe); activeSwipe = null; }
         }, { passive: true });
         el.timerList.addEventListener('click', function(e) {
-            var editBtn = e.target.closest('.tc-swipe-edit');
-            var deleteBtn = e.target.closest('.tc-swipe-delete');
-            if (editBtn) {
-                var id = editBtn.dataset.id;
-                var card = editBtn.closest('.tc-card');
-                if (card) resetSwipe(card);
-                haptic('light');
-                editTimer(id);
-            } else if (deleteBtn) {
-                var id2 = deleteBtn.dataset.id;
-                var card2 = deleteBtn.closest('.tc-card');
-                if (card2) resetSwipe(card2);
-                delTimer(id2);
-            }
+            var eb = e.target.closest('.tc-swipe-edit');
+            var db = e.target.closest('.tc-swipe-delete');
+            if (eb) { var c1 = eb.closest('.tc-card'); if (c1) resetSwipe(c1); haptic('light'); editTimer(eb.dataset.id); }
+            else if (db) { var c2 = db.closest('.tc-card'); if (c2) resetSwipe(c2); delTimer(db.dataset.id); }
         });
     }
+
+    // ===== Drag-and-drop =====
+    function clearDragIndicators() {
+        var cards = el.timerList ? el.timerList.querySelectorAll('.tc-card') : [];
+        for (var i = 0; i < cards.length; i++) cards[i].classList.remove('drag-over-top','drag-over-bottom');
+    }
+    function reorderTimers(srcId, targetId, insertBefore) {
+        var si = timers.findIndex(function(x) { return x.id === srcId; });
+        var ti = timers.findIndex(function(x) { return x.id === targetId; });
+        if (si === -1 || ti === -1 || si === ti) return;
+        var m = timers.splice(si, 1)[0];
+        ti = timers.findIndex(function(x) { return x.id === targetId; });
+        if (insertBefore) timers.splice(ti, 0, m);
+        else timers.splice(ti + 1, 0, m);
+        saveTimers();
+        render();
+    }
+    function initDrag() {
+        if (!el.timerList) return;
+        el.timerList.addEventListener('dragstart', function(e) {
+            var h = e.target.closest('.tc-handle');
+            if (!h) { e.preventDefault(); return; }
+            var card = h.closest('.tc-card');
+            if (!card) return;
+            dragSrcId = card.dataset.id;
+            card.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', card.dataset.id);
+        });
+        el.timerList.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            var card = e.target.closest('.tc-card');
+            if (!card || card.dataset.id === dragSrcId) return;
+            clearDragIndicators();
+            var r = card.getBoundingClientRect();
+            if (e.clientY < r.top + r.height/2) card.classList.add('drag-over-top');
+            else card.classList.add('drag-over-bottom');
+        });
+        el.timerList.addEventListener('dragleave', function(e) {
+            var card = e.target.closest('.tc-card');
+            if (card) card.classList.remove('drag-over-top','drag-over-bottom');
+        });
+        el.timerList.addEventListener('drop', function(e) {
+            e.preventDefault();
+            var target = e.target.closest('.tc-card');
+            if (!target || !dragSrcId) return;
+            if (target.dataset.id === dragSrcId) return;
+            var r = target.getBoundingClientRect();
+            reorderTimers(dragSrcId, target.dataset.id, e.clientY < r.top + r.height/2);
+            clearDragIndicators();
+        });
+        el.timerList.addEventListener('dragend', function() {
+            dragSrcId = null;
+            clearDragIndicators();
+        });
+        // Touch long press
+        if (isTouch) {
+            var lpTimer = null, isLP = false, lsX = 0, lsY = 0;
+            var lpCard = null, lpClone = null, lpActive = false;
+            el.timerList.addEventListener('touchstart', function(e) {
+                var h = e.target.closest('.tc-handle');
+                if (!h) return;
+                var card = h.closest('.tc-card');
+                if (!card) return;
+                if (e.target.closest('.tc-actions button') || e.target.closest('.tc-swipe-actions button')) return;
+                var t = e.touches[0];
+                lsX = t.clientX; lsY = t.clientY;
+                lpCard = card; isLP = false;
+                clearTimeout(lpTimer);
+                lpTimer = setTimeout(function() {
+                    isLP = true; lpActive = true;
+                    lpClone = card.cloneNode(true);
+                    lpClone.className = 'tc-card touch-clone';
+                    lpClone.style.cssText = 'position:fixed;z-index:5000;pointer-events:none;width:' + card.offsetWidth + 'px;opacity:.85;transform:rotate(2deg);';
+                    lpClone.style.left = (t.clientX - lpClone.offsetWidth/2) + 'px';
+                    lpClone.style.top = (t.clientY - 20) + 'px';
+                    document.body.appendChild(lpClone);
+                    card.classList.add('dragging');
+                    haptic('medium');
+                }, 350);
+            }, { passive: true });
+            el.timerList.addEventListener('touchmove', function(e) {
+                if (!lpCard) return;
+                var t = e.touches[0];
+                var dx = t.clientX - lsX, dy = t.clientY - lsY;
+                if (isLP) {
+                    e.preventDefault();
+                    if (lpClone) {
+                        lpClone.style.left = (t.clientX - lpClone.offsetWidth/2) + 'px';
+                        lpClone.style.top = (t.clientY - 20) + 'px';
+                        lpClone.style.display = 'none';
+                        var under = document.elementFromPoint(t.clientX, t.clientY);
+                        lpClone.style.display = '';
+                        var tc = under ? under.closest('.tc-card') : null;
+                        clearDragIndicators();
+                        if (tc && tc !== lpCard) {
+                            var r = tc.getBoundingClientRect();
+                            if (t.clientY < r.top + r.height/2) tc.classList.add('drag-over-top');
+                            else tc.classList.add('drag-over-bottom');
+                        }
+                    }
+                    return;
+                }
+                if (Math.abs(dx) > 12 || Math.abs(dy) > 12) { clearTimeout(lpTimer); lpCard = null; }
+            }, { passive: false });
+            el.timerList.addEventListener('touchend', function() {
+                clearTimeout(lpTimer);
+                if (isLP && lpActive) {
+                    if (lpCard) lpCard.classList.remove('dragging');
+                    if (lpClone && lpClone.parentNode) lpClone.parentNode.removeChild(lpClone);
+                    lpClone = null;
+                    var over = el.timerList.querySelector('.drag-over-top, .drag-over-bottom');
+                    if (over && lpCard) reorderTimers(lpCard.dataset.id, over.dataset.id, over.classList.contains('drag-over-top'));
+                    clearDragIndicators();
+                    isLP = false; lpActive = false;
+                }
+                lpCard = null;
+            });
+            el.timerList.addEventListener('touchcancel', function() {
+                clearTimeout(lpTimer);
+                if (isLP && lpActive) {
+                    if (lpCard) lpCard.classList.remove('dragging');
+                    if (lpClone && lpClone.parentNode) lpClone.parentNode.removeChild(lpClone);
+                    lpClone = null;
+                    clearDragIndicators();
+                    isLP = false; lpActive = false;
+                }
+                lpCard = null;
+            });
+        }
+    }
+
+    // ===== Pull to refresh =====
     function initPullToRefresh() {
         if (!el.scrollPage || !isTouch) return;
-        var indicator = $('pullIndicator');
-        if (!indicator) return;
+        var ind = $('pullIndicator');
+        if (!ind) return;
         var startY = 0, pulling = false;
         el.scrollPage.addEventListener('touchstart', function(e) {
             if (el.scrollPage.scrollTop <= 0) { startY = e.touches[0].clientY; pulling = true; }
@@ -1207,230 +1150,123 @@
             if (!pulling) return;
             var dy = e.touches[0].clientY - startY;
             if (dy > 10 && el.scrollPage.scrollTop <= 0) {
-                var progress = Math.min(1, dy / 80);
-                indicator.style.height = Math.min(56, dy * 0.6) + 'px';
-                indicator.style.opacity = progress;
-                indicator.classList.add('active');
-                var svg = indicator.querySelector('svg');
-                if (svg) svg.style.transform = 'rotate(' + (progress * 180) + 'deg)';
+                var p = Math.min(1, dy / 80);
+                ind.style.height = Math.min(56, dy * 0.6) + 'px';
+                ind.style.opacity = p;
+                ind.classList.add('active');
+                var svg = ind.querySelector('svg');
+                if (svg) svg.style.transform = 'rotate(' + (p * 180) + 'deg)';
             }
         }, { passive: true });
         el.scrollPage.addEventListener('touchend', function() {
             if (!pulling) return;
             pulling = false;
-            var h = parseFloat(indicator.style.height) || 0;
+            var h = parseFloat(ind.style.height) || 0;
             if (h >= 40) {
                 haptic('medium');
-                indicator.classList.add('refreshing');
-                indicator.style.height = '56px';
-                indicator.style.opacity = '1';
-                var svg = indicator.querySelector('svg');
+                ind.classList.add('refreshing');
+                ind.style.height = '56px'; ind.style.opacity = '1';
+                var svg = ind.querySelector('svg');
                 if (svg) svg.style.transform = '';
                 setTimeout(function() {
                     render();
-                    indicator.classList.remove('active', 'refreshing');
-                    indicator.style.height = '';
-                    indicator.style.opacity = '';
+                    ind.classList.remove('active', 'refreshing');
+                    ind.style.height = ''; ind.style.opacity = '';
                     toast.info('Обновлено');
                 }, 600);
             } else {
-                indicator.classList.remove('active');
-                indicator.style.height = '';
-                indicator.style.opacity = '';
+                ind.classList.remove('active');
+                ind.style.height = ''; ind.style.opacity = '';
             }
         });
         el.scrollPage.addEventListener('touchcancel', function() {
             pulling = false;
-            indicator.classList.remove('active');
-            indicator.style.height = '';
-            indicator.style.opacity = '';
+            ind.classList.remove('active');
+            ind.style.height = ''; ind.style.opacity = '';
         });
     }
+
+    // ===== Swipe-down модалок =====
     function initModalSwipe() {
         if (!isTouch) return;
         document.querySelectorAll('.modal').forEach(function(modal) {
             var mc = modal.querySelector('.mc');
-            var handle = modal.querySelector('.mc-handle');
-            if (!mc || !handle) return;
-            var startY = 0, swiping = false;
-            handle.addEventListener('touchstart', function(e) {
-                startY = e.touches[0].clientY;
-                swiping = true;
-                mc.classList.add('swiping');
-            }, { passive: true });
-            handle.addEventListener('touchmove', function(e) {
-                if (!swiping) return;
-                var dy = e.touches[0].clientY - startY;
+            var h = modal.querySelector('.mc-handle');
+            if (!mc || !h) return;
+            var sy = 0, sw = false;
+            h.addEventListener('touchstart', function(e) { sy = e.touches[0].clientY; sw = true; mc.classList.add('swiping'); }, { passive: true });
+            h.addEventListener('touchmove', function(e) {
+                if (!sw) return;
+                var dy = e.touches[0].clientY - sy;
                 if (dy > 0) {
                     e.preventDefault();
                     mc.style.transform = 'translateY(' + dy + 'px)';
                     modal.style.opacity = Math.max(0, 1 - dy / 300);
                 }
             }, { passive: false });
-            handle.addEventListener('touchend', function() {
-                if (!swiping) return;
-                swiping = false;
+            h.addEventListener('touchend', function() {
+                if (!sw) return;
+                sw = false;
                 mc.classList.remove('swiping');
-                var transform = mc.style.transform;
-                var match = transform.match(/translateY\(([\d.]+)px\)/);
-                var dy = match ? parseFloat(match[1]) : 0;
+                var m = mc.style.transform.match(/translateY\(([\d.]+)px\)/);
+                var dy = m ? parseFloat(m[1]) : 0;
                 if (dy > 120) {
                     haptic('medium');
                     dismissModal(modal);
                     if (modal === el.sModal) closeSettings();
                     history.back();
                 }
-                mc.style.transform = '';
-                modal.style.opacity = '';
+                mc.style.transform = ''; modal.style.opacity = '';
             });
-            handle.addEventListener('touchcancel', function() {
-                swiping = false;
-                mc.classList.remove('swiping');
-                mc.style.transform = '';
-                modal.style.opacity = '';
+            h.addEventListener('touchcancel', function() {
+                sw = false; mc.classList.remove('swiping');
+                mc.style.transform = ''; modal.style.opacity = '';
             });
         });
     }
-    function clearDragIndicators() {
-        var cards = el.timerList ? el.timerList.querySelectorAll('.tc-card') : [];
-        for (var i = 0; i < cards.length; i++) {
-            cards[i].classList.remove('drag-over-top', 'drag-over-bottom');
-        }
-    }
-    function reorderTimers(srcId, targetId, insertBefore) {
-        var srcIdx = timers.findIndex(function(x) { return x.id === srcId; });
-        var targetIdx = timers.findIndex(function(x) { return x.id === targetId; });
-        if (srcIdx === -1 || targetIdx === -1 || srcIdx === targetIdx) return;
-        var moved = timers.splice(srcIdx, 1)[0];
-        targetIdx = timers.findIndex(function(x) { return x.id === targetId; });
-        if (insertBefore) timers.splice(targetIdx, 0, moved);
-        else timers.splice(targetIdx + 1, 0, moved);
-        saveTimers();
-        render();
-    }
-    function exportImage() {
-        var card = el.timerList.querySelector('.tc-card');
-        if (!card) { toast.error('Нет счётчиков'); return; }
-        var cvs = document.createElement('canvas');
-        cvs.width = 800; cvs.height = 600;
-        var c = cvs.getContext('2d');
-        c.fillStyle = '#000';
-        c.fillRect(0,0,800,600);
-        var grad = c.createLinearGradient(0,0,800,600);
-        grad.addColorStop(0, '#0a84ff');
-        grad.addColorStop(1, '#5e5ce6');
-        c.fillStyle = grad;
-        c.globalAlpha = 0.15;
-        c.fillRect(0,0,800,600);
-        c.globalAlpha = 1;
-        c.fillStyle = '#fff';
-        c.font = '700 36px -apple-system, sans-serif';
-        c.textAlign = 'center';
-        c.fillText('ChronoFlow', 400, 60);
-        c.font = '400 16px -apple-system, sans-serif';
-        c.fillStyle = 'rgba(255,255,255,0.6)';
-        c.fillText(new Date().toLocaleDateString('ru-RU', { year:'numeric', month:'long', day:'numeric' }), 400, 90);
-        var items = el.timerList.querySelectorAll('.tc-card');
-        var y = 130;
-        var count = Math.min(items.length, 8);
-        for (var i = 0; i < count; i++) {
-            var el2 = items[i].querySelector('.tc-counter-val');
-            var titleEl = items[i].querySelector('.tc-title');
-            var typeEl = items[i].querySelector('.tc-type');
-            if (!el2 || !titleEl) continue;
-            c.fillStyle = 'rgba(255,255,255,0.08)';
-            c.beginPath();
-            // roundRect уже определён, вызываем
-            c.roundRect(40, y, 720, 50, 12);
-            c.fill();
-            c.fillStyle = '#fff';
-            c.font = '600 15px -apple-system, sans-serif';
-            c.textAlign = 'left';
-            c.fillText(titleEl.textContent, 60, y + 22);
-            c.fillStyle = el2.style.color || '#fff';
-            c.font = '300 18px monospace';
-            c.textAlign = 'right';
-            c.fillText(el2.textContent, 740, y + 28);
-            if (typeEl) {
-                c.fillStyle = 'rgba(255,255,255,0.4)';
-                c.font = '600 10px -apple-system, sans-serif';
-                c.fillText(typeEl.textContent, 740, y + 44);
-            }
-            y += 58;
-        }
-        if (items.length > 8) {
-            c.fillStyle = 'rgba(255,255,255,0.3)';
-            c.font = '12px -apple-system, sans-serif';
-            c.textAlign = 'right';
-            c.fillText('и ещё ' + (items.length - 8) + ' счётчиков', 760, y + 10);
-        }
-        cvs.toBlob(function(blob) {
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = 'chronoflow-' + new Date().toISOString().slice(0,10) + '.png';
-            a.click();
-            URL.revokeObjectURL(url);
-            haptic('success');
-            toast.success('Изображение сохранено');
-        });
-    }
+
+    // ===== SVG-часы =====
     var SVG_NS = 'http://www.w3.org/2000/svg';
     var SVG_CX = 100, SVG_CY = 100;
     var svgDayRingFill, svgRingEl, svgRingGradStop1, svgRingGradStop2, svgDayGradStop1, svgDayGradStop2;
     var SEC_RING_R = 88, DAY_RING_R = 76;
-    var SEC_RING_CIRCUMFERENCE = 2 * Math.PI * SEC_RING_R;
-    var DAY_RING_CIRCUMFERENCE = 2 * Math.PI * DAY_RING_R;
+    var SEC_RING_CIRC = 2 * Math.PI * SEC_RING_R;
+    var DAY_RING_CIRC = 2 * Math.PI * DAY_RING_R;
     var DAYS_SHORT_RU = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
     var MONTHS_SHORT = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
     function initClockSvg() {
-        svgRingEl = document.getElementById('ringProgress');
-        svgDayRingFill = document.getElementById('dayRingFill');
+        svgRingEl = $('ringProgress');
+        svgDayRingFill = $('dayRingFill');
         svgRingGradStop1 = document.querySelector('#ringGrad stop:first-child');
         svgRingGradStop2 = document.querySelector('#ringGrad stop:last-child');
         svgDayGradStop1 = document.querySelector('#dayRingGrad stop:first-child');
         svgDayGradStop2 = document.querySelector('#dayRingGrad stop:last-child');
-        if (svgRingEl) {
-            svgRingEl.style.strokeDasharray = SEC_RING_CIRCUMFERENCE;
-            svgRingEl.style.strokeDashoffset = SEC_RING_CIRCUMFERENCE;
-        }
-        if (svgDayRingFill) {
-            svgDayRingFill.style.strokeDasharray = DAY_RING_CIRCUMFERENCE;
-            svgDayRingFill.style.strokeDashoffset = DAY_RING_CIRCUMFERENCE;
-        }
+        if (svgRingEl) { svgRingEl.style.strokeDasharray = SEC_RING_CIRC; svgRingEl.style.strokeDashoffset = SEC_RING_CIRC; }
+        if (svgDayRingFill) { svgDayRingFill.style.strokeDasharray = DAY_RING_CIRC; svgDayRingFill.style.strokeDashoffset = DAY_RING_CIRC; }
         svgDayDots.innerHTML = '';
         svgDayEls = [];
         var dotR = 65;
         for (var i = 0; i < 7; i++) {
-            var angle = (i * 2 * Math.PI / 7) - Math.PI / 2;
-            var x = SVG_CX + dotR * Math.cos(angle);
-            var y = SVG_CY + dotR * Math.sin(angle);
+            var a = (i * 2 * Math.PI / 7) - Math.PI / 2;
+            var x = SVG_CX + dotR * Math.cos(a), y = SVG_CY + dotR * Math.sin(a);
             var dot = document.createElementNS(SVG_NS, 'circle');
-            dot.setAttribute('cx', x);
-            dot.setAttribute('cy', y);
-            dot.setAttribute('r', '3');
-            dot.setAttribute('fill', COLORS[i]);
+            dot.setAttribute('cx', x); dot.setAttribute('cy', y);
+            dot.setAttribute('r', '3'); dot.setAttribute('fill', COLORS[i]);
             dot.setAttribute('opacity', '0.15');
-            svgDayDots.appendChild(dot);
-            svgDayEls.push(dot);
+            svgDayDots.appendChild(dot); svgDayEls.push(dot);
         }
-        var ticksGroup = document.getElementById('svgTicks');
+        var ticksGroup = $('svgTicks');
         if (ticksGroup) {
             ticksGroup.innerHTML = '';
             var tickR = 88;
             for (var t = 0; t < 60; t++) {
-                var a = (t * 2 * Math.PI / 60) - Math.PI / 2;
-                var isMajor = t % 5 === 0;
-                var len = isMajor ? 5 : 2;
-                var x1 = SVG_CX + (tickR - len) * Math.cos(a);
-                var y1 = SVG_CY + (tickR - len) * Math.sin(a);
-                var x2 = SVG_CX + tickR * Math.cos(a);
-                var y2 = SVG_CY + tickR * Math.sin(a);
+                var an = (t * 2 * Math.PI / 60) - Math.PI / 2;
+                var isMajor = t % 5 === 0, len = isMajor ? 5 : 2;
                 var line = document.createElementNS(SVG_NS, 'line');
-                line.setAttribute('x1', x1);
-                line.setAttribute('y1', y1);
-                line.setAttribute('x2', x2);
-                line.setAttribute('y2', y2);
+                line.setAttribute('x1', SVG_CX + (tickR - len) * Math.cos(an));
+                line.setAttribute('y1', SVG_CY + (tickR - len) * Math.sin(an));
+                line.setAttribute('x2', SVG_CX + tickR * Math.cos(an));
+                line.setAttribute('y2', SVG_CY + tickR * Math.sin(an));
                 line.setAttribute('stroke', isMajor ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)');
                 line.setAttribute('stroke-width', isMajor ? '1' : '0.5');
                 line.setAttribute('stroke-linecap', 'round');
@@ -1438,56 +1274,34 @@
             }
         }
     }
-    function lightenHex(hex, pct) {
-        if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return hex || DEFAULT_COLOR;
-        var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-        r = Math.min(255, Math.round(r + (255 - r) * pct));
-        g = Math.min(255, Math.round(g + (255 - g) * pct));
-        b = Math.min(255, Math.round(b + (255 - b) * pct));
-        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    }
     function updateClockSvg() {
         var now = new Date();
         var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds(), ms = now.getMilliseconds();
         var dayIndex = relDay(now);
         var dayColor = COLORS[dayIndex];
         var isLight = document.body.classList.contains('lt');
-        if (svgRingEl) {
-            var secProgress = (s + ms / 1000) / 60;
-            svgRingEl.style.strokeDashoffset = SEC_RING_CIRCUMFERENCE * (1 - secProgress);
-        }
+        if (svgRingEl) svgRingEl.style.strokeDashoffset = SEC_RING_CIRC * (1 - (s + ms/1000)/60);
         if (svgRingGradStop1) svgRingGradStop1.setAttribute('stop-color', dayColor);
         if (svgRingGradStop2) svgRingGradStop2.setAttribute('stop-color', lightenHex(dayColor, 0.3));
-        var dayMs = h * 3600000 + m * 60000 + s * 1000 + ms;
-        var dayProgress = dayMs / 86400000;
-        if (svgDayRingFill) {
-            svgDayRingFill.style.strokeDashoffset = DAY_RING_CIRCUMFERENCE * (1 - dayProgress);
-        }
+        if (svgDayRingFill) svgDayRingFill.style.strokeDashoffset = DAY_RING_CIRC * (1 - (h*3600000 + m*60000 + s*1000 + ms)/86400000);
         if (svgDayGradStop1) svgDayGradStop1.setAttribute('stop-color', dayColor);
         if (svgDayGradStop2) svgDayGradStop2.setAttribute('stop-color', lightenHex(dayColor, 0.25));
-        if (_ringBgs) {
-            for (var r = 0; r < _ringBgs.length; r++) {
-                _ringBgs[r].style.stroke = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
-            }
-        }
+        if (_ringBgs) for (var r = 0; r < _ringBgs.length; r++) _ringBgs[r].style.stroke = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
         for (var i = 0; i < svgDayEls.length; i++) {
-            var isActive = i === dayIndex;
-            svgDayEls[i].setAttribute('r', isActive ? '4' : '2.5');
-            svgDayEls[i].setAttribute('opacity', isActive ? '1' : '0.2');
-            svgDayEls[i].style.filter = isActive ? 'url(#dotGlow)' : 'none';
+            var active = i === dayIndex;
+            svgDayEls[i].setAttribute('r', active ? '4' : '2.5');
+            svgDayEls[i].setAttribute('opacity', active ? '1' : '0.2');
+            svgDayEls[i].style.filter = active ? 'url(#dotGlow)' : 'none';
         }
-        var svgDay = document.getElementById('svgDay');
-        var svgTime = document.getElementById('svgTime');
-        var svgSec = document.getElementById('svgSec');
-        var svgDate = document.getElementById('svgDate');
+        var svgDay = $('svgDay'), svgTime = $('svgTime'), svgSec = $('svgSec'), svgDate = $('svgDate');
         if (svgDay) svgDay.textContent = DAYS_SHORT_RU[dayIndex];
         if (svgTime) svgTime.textContent = pad(h) + ':' + pad(m);
         if (svgSec) svgSec.textContent = pad(s);
         if (svgDate) svgDate.textContent = now.getDate() + ' ' + MONTHS_SHORT[now.getMonth()];
-        var svgSt = document.getElementById('svgSt');
+        var svgSt = $('svgSt');
         if (svgSt) {
-            var isWeekend = dayIndex >= 5;
-            var periods = isWeekend ? ['Выходной · Ночь','Выходной · Утро','Выходной · День','Выходной · Вечер'] : ['Ночь','Утро','День','Вечер'];
+            var w = dayIndex >= 5;
+            var periods = w ? ['Выходной · Ночь','Выходной · Утро','Выходной · День','Выходной · Вечер'] : ['Ночь','Утро','День','Вечер'];
             svgSt.textContent = periods[h < 6 ? 0 : h < 12 ? 1 : h < 18 ? 2 : 3];
         }
     }
@@ -1496,6 +1310,82 @@
         if (!el.timeAnnounce) return;
         clearTimeout(_announceTimer);
         _announceTimer = setTimeout(function() { el.timeAnnounce.textContent = text; }, 500);
+    }
+
+    // ===== Тикер =====
+    function tick(ts) {
+        if (!_pageVisible) { _tickRafId = requestAnimationFrame(tick); return; }
+        if (ts - lastTick < 500) { _tickRafId = requestAnimationFrame(tick); return; }
+        lastTick = ts;
+        var now = new Date();
+        var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+        if (el.hdrH) el.hdrH.textContent = pad(h);
+        if (el.hdrM) el.hdrM.textContent = pad(m);
+        if (el.hdrS) el.hdrS.textContent = pad(s);
+        if (el.hdrDate && prevHour !== h) el.hdrDate.textContent = now.getDate() + ' ' + MONTHS[now.getMonth()].substring(0,3) + '.';
+        var dayIndex = relDay(now);
+        if (prevDay !== dayIndex) { prevDay = dayIndex; haptic('light'); checkRecurring(now); }
+        if (prevHour !== h) { prevHour = h; announceTime(pad(h) + ':' + pad(m) + ', ' + DAYS[dayIndex]); }
+        // Обновляем только видимые карточки
+        visibleCards.forEach(function(card) { updateCardCounter(card); });
+        checkNotifications(now);
+        _tickRafId = requestAnimationFrame(tick);
+    }
+    function tickSvg() {
+        if (_pageVisible) updateClockSvg();
+        _tickSvgRafId = requestAnimationFrame(tickSvg);
+    }
+
+    // ===== Скролл =====
+    var _scrollRaf = null, _cachedWrapH = 0, _cachedWrap = null, _cachedSectionHdr = null;
+    function handleScroll() {
+        if (_scrollRaf) return;
+        _scrollRaf = requestAnimationFrame(function() {
+            _scrollRaf = null;
+            if (!el.scrollPage || !el.hdrClock) return;
+            var st = el.scrollPage.scrollTop;
+            var totalH = _cachedWrapH + 16;
+            var p1 = Math.max(0, Math.min(1, st / (totalH * 0.6)));
+            var e1 = p1 * p1 * (3 - 2 * p1);
+            var hdrOp = Math.max(0, Math.min(1, (st - totalH * 0.3) / (totalH * 0.3)));
+            el.hdrClock.style.opacity = hdrOp;
+            el.hdrClock.style.transform = 'translateY(' + (1 - hdrOp) * -6 + 'px)';
+            if (hdrOp > 0.01) el.hdrClock.classList.add('show');
+            else el.hdrClock.classList.remove('show');
+            if (_cachedWrap) {
+                _cachedWrap.style.transform = 'scale(' + (1 - e1 * 0.12) + ') translateY(' + (e1 * -10) + 'px)';
+                _cachedWrap.style.opacity = Math.max(0, 1 - e1 * 1.2);
+            }
+            if (_cachedSectionHdr) {
+                if (timers.length === 0 && st < totalH * 0.4) _cachedSectionHdr.classList.add('shifted');
+                else _cachedSectionHdr.classList.remove('shifted');
+            }
+        });
+    }
+    function initScroll() {
+        if (!el.scrollPage) return;
+        _cachedWrap = el.clockSection ? el.clockSection.querySelector('.clock-wrap') : null;
+        _cachedSectionHdr = document.querySelector('.section-hdr');
+        requestAnimationFrame(function() { _cachedWrapH = _cachedWrap ? _cachedWrap.scrollHeight : 300; });
+        el.scrollPage.addEventListener('scroll', handleScroll, { passive: true });
+        var rt = null;
+        window.addEventListener('resize', function() {
+            clearTimeout(rt);
+            rt = setTimeout(function() {
+                _cachedWrapH = _cachedWrap ? _cachedWrap.scrollHeight : 300;
+                handleScroll();
+            }, 150);
+        }, { passive: true });
+    }
+
+    // ===== Клавиатура и SW =====
+    function initKeyboard() {
+        document.addEventListener('keydown', function(e) {
+            if (document.querySelector('.modal.show')) return;
+            var tag = document.activeElement ? document.activeElement.tagName : '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openModal(); }
+        });
     }
     function initSW() {
         if (!('serviceWorker' in navigator)) return;
@@ -1510,193 +1400,64 @@
             });
         }).catch(function() {});
     }
-    // Функция tick теперь управляется через requestAnimationFrame с отменой
-    function tick(ts) {
-        if (!_pageVisible) {
-            // Если вкладка скрыта, пропускаем обновление, но продолжаем запрашивать следующий кадр
-            _tickRafId = requestAnimationFrame(tick);
-            return;
-        }
-        if (ts - lastTick < 500) {
-            _tickRafId = requestAnimationFrame(tick);
-            return;
-        }
-        lastTick = ts;
-        var now = new Date();
-        var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
-        if (el.hdrH) el.hdrH.textContent = pad(h);
-        if (el.hdrM) el.hdrM.textContent = pad(m);
-        if (el.hdrS) el.hdrS.textContent = pad(s);
-        if (el.hdrDate && prevHour !== h) {
-            el.hdrDate.textContent = now.getDate() + ' ' + MONTHS[now.getMonth()].substring(0,3) + '.';
-        }
-        var dayIndex = relDay(now);
-        if (prevDay !== dayIndex) {
-            prevDay = dayIndex;
-            haptic('light');
-            checkRecurring(now);
-        }
-        if (prevHour !== h) {
-            prevHour = h;
-            announceTime(pad(h) + ':' + pad(m) + ', ' + DAYS[dayIndex]);
-        }
-        var counters = document.querySelectorAll('.tc-counter-val');
-        for (var x = 0; x < counters.length; x++) {
-            var ts2 = parseInt(counters[x].dataset.ts);
-            var tp2 = counters[x].dataset.type;
-            if (counters[x] && ts2) counters[x].textContent = fmtCounter(ts2, tp2);
-        }
-        checkNotifications(now);
-        _tickRafId = requestAnimationFrame(tick);
-    }
-    // Функция tickSvg тоже с проверкой видимости
-    function tickSvg() {
-        if (_pageVisible) {
-            updateClockSvg();
-        }
-        _tickSvgRafId = requestAnimationFrame(tickSvg);
-    }
-    function initScroll() {
-        if (!el.scrollPage) return;
-        el.scrollPage.addEventListener('scroll', handleScroll, { passive: true });
-        _cachedWrap = el.clockSection ? el.clockSection.querySelector('.clock-wrap') : null;
-        _cachedSectionHdr = document.querySelector('.section-hdr');
-        requestAnimationFrame(function() {
-            _cachedWrapH = _cachedWrap ? _cachedWrap.scrollHeight : 300;
-        });
-        var resizeTimer = null;
-        window.addEventListener('resize', function() {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(function() {
-                _cachedWrapH = _cachedWrap ? _cachedWrap.scrollHeight : 300;
-                if (_cachedWrap) _cachedWrap.style.cssText = '';
-                handleScroll();
-            }, 150);
-        }, { passive: true });
-    }
-    var _scrollRaf = null, _cachedWrapH = 0, _cachedWrap = null, _cachedSectionHdr = null;
-    function handleScroll() {
-        if (_scrollRaf) return;
-        _scrollRaf = requestAnimationFrame(function() {
-            _scrollRaf = null;
-            if (!el.scrollPage || !el.hdrClock) return;
-            var scrollTop = el.scrollPage.scrollTop;
-            var totalH = _cachedWrapH + 16;
-            var p1 = Math.max(0, Math.min(1, scrollTop / (totalH * 0.6)));
-            var ease1 = p1 * p1 * (3 - 2 * p1);
-            var hdrOpacity = Math.max(0, Math.min(1, (scrollTop - totalH * 0.3) / (totalH * 0.3)));
-            el.hdrClock.style.opacity = hdrOpacity;
-            el.hdrClock.style.transform = 'translateY(' + (1 - hdrOpacity) * -6 + 'px)';
-            if (hdrOpacity > 0.01) el.hdrClock.classList.add('show');
-            else el.hdrClock.classList.remove('show');
-            if (_cachedWrap) {
-                var s = 1 - ease1 * 0.12;
-                var ty = ease1 * -10;
-                var o = Math.max(0, 1 - ease1 * 1.2);
-                _cachedWrap.style.transform = 'scale(' + s + ') translateY(' + ty + 'px)';
-                _cachedWrap.style.opacity = o;
-            }
-            if (_cachedSectionHdr) {
-                if (timers.length === 0) {
-                    if (scrollTop > totalH * 0.4) _cachedSectionHdr.classList.remove('shifted');
-                    else _cachedSectionHdr.classList.add('shifted');
-                } else {
-                    _cachedSectionHdr.classList.remove('shifted');
-                }
-            }
-        });
-    }
-    function initKeyboard() {
-        document.addEventListener('keydown', function(e) {
-            if (document.querySelector('.modal.show')) return;
-            var tag = document.activeElement ? document.activeElement.tagName : '';
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-            if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey) {
-                e.preventDefault();
-                openModal();
-            }
-        });
-    }
     function hideSplash() {
         setTimeout(function() { if (el.splash) el.splash.classList.add('hide'); }, 1000);
         setTimeout(function() { if (el.splash) el.splash.style.display = 'none'; }, 1500);
     }
-    function initElements() {
-        svgDayDots = $('dayDots');
-        el.timerList = $('timerList');
-        el.empty = $('emptyState');
-        el.timerModal = $('timerModal');
-        el.timerForm = $('timerForm');
-        el.timerTitle = $('timerTitle');
-        el.timerDate = $('timerDate');
-        el.timerType = $('timerType');
-        el.mTitle = $('mTitle');
-        el.titleCnt = $('titleCnt');
-        el.fModal = $('fModal');
-        el.sModal = $('sModal');
-        el.notif = $('notif');
-        el.importFile = $('importFile');
-        el.clockSection = $('clockSection');
-        el.timersSection = $('timersSection');
-        el.addFirstBtn = $('addFirstBtn');
-        el.saveMoreBtn = $('saveMoreBtn');
-        el.saveMoreRow = $('saveMoreRow');
-        el.resetTimeBtn = $('resetTimeBtn');
-        el.themeSel = $('themeSel');
-        el.animToggle = $('animToggle');
-        el.installBtn = $('installBtn');
-        el.timeAnnounce = $('timeAnnounce');
-        el.offlineDot = $('offlineDot');
-        el.splash = $('splash');
-        el.scrollPage = $('scrollPage');
-        el.confirmModal = $('confirmModal');
-        el.datePickerBtn = $('datePickerBtn');
-        el.hdrSub = $('hdrSub');
-        el.hdrClock = $('hdrClock');
-        el.hdrH = $('hdrH');
-        el.hdrM = $('hdrM');
-        el.hdrS = $('hdrS');
-        el.hdrDate = $('hdrDate');
-        el.searchInput = $('searchInput');
-        el.searchClear = $('searchClear');
-        el.searchBar = $('searchBar');
-        el.searchBtn = $('searchBtn');
-        el.addTimerBtn = $('addTimerBtn');
-        el.timerCategory = $('timerCategory');
-        el.timerRecurring = $('timerRecurring');
-        el.timerReminder = $('timerReminder');
-        el.catSelect = $('catSelect');
-        el.sortSelect = $('sortSelect');
-        el.filterBtn = $('filterBtn');
+
+    // ===== Changelog =====
+    function loadChangelog() {
+        fetch('./changelog.json', { cache: 'no-cache' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var versions = Object.keys(data).sort().reverse();
+                if (!versions.length) return;
+                var v = versions[0];
+                var info = data[v];
+                var titleEl = $('changelogTitle');
+                var listEl = $('changelogList');
+                if (titleEl) titleEl.textContent = 'Версия ' + v + (info.title ? ' — ' + info.title : '');
+                if (listEl && info.items) {
+                    listEl.innerHTML = info.items.map(function(i) { return '<li>' + esc(i) + '</li>'; }).join('');
+                }
+            })
+            .catch(function() {
+                var l = $('changelogList');
+                if (l) l.innerHTML = '<li>Версия ' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '2026.09.11') + '</li>';
+            });
     }
+
+    // ===== Подсказка о перетаскивании =====
+    function showDragTip() {
+        var tip = $('dragTip');
+        if (!tip) return;
+        tip.classList.add('show');
+        var close = tip.querySelector('.tip-close');
+        if (close) close.onclick = function() { tip.classList.remove('show'); };
+        setTimeout(function() { tip.classList.remove('show'); }, 6000);
+    }
+
+    // ===== Иконки =====
     function injectIcons() {
         var map = {
-            settingsBtn: 'settings',
-            installBtn: 'install',
-            addTimerBtn: 'plus',
-            searchBtn: 'search',
-            filterBtn: 'filter',
-            datePickerBtn: 'calendarPicker',
-            resetTimeBtn: 'clock',
-            searchClear: 'searchClear',
-            customColorBtn: 'colorPlus',
-            exportImgBtn: 'image',
-            addFirstBtn: 'plus'
+            settingsBtn: 'settings', installBtn: 'install', addTimerBtn: 'plus',
+            searchBtn: 'search', filterBtn: 'filter',
+            datePickerBtn: 'calendarPicker', resetTimeBtn: 'clock',
+            searchClear: 'searchClear', customColorBtn: 'colorPlus',
+            exportImgBtn: 'image', addFirstBtn: 'plus'
         };
         for (var id in map) {
             var btn = $(id);
             if (btn && !btn.innerHTML.trim()) btn.innerHTML = ICONS[map[id]];
         }
         document.querySelectorAll('[data-close-modal]').forEach(function(btn) {
-            if (!btn.innerHTML.trim()) {
-                btn.innerHTML = ICONS.close;
-            }
+            if (!btn.innerHTML.trim()) btn.innerHTML = ICONS.close;
         });
         var addBtn = $('addTimerBtn');
         if (addBtn && !addBtn.textContent.includes('Добавить')) addBtn.innerHTML = ICONS.plus + ' <span>Добавить</span>';
-        var pullIndicator = $('pullIndicator');
-        if (pullIndicator) pullIndicator.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M12 17V3M7 12l5 5 5-5"/></svg>';
-        var sBtns = { exportBtn: 'exportDown', importBtn: 'importUp', clearBtn: 'trash' };
+        var pi = $('pullIndicator');
+        if (pi) pi.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M12 17V3M7 12l5 5 5-5"/></svg>';
+        var sBtns = { exportBtn: 'exportDown', importBtn: 'importUp', clearBtn: 'trash', exportIcsBtn: 'calendar' };
         for (var id2 in sBtns) {
             var btn2 = $(id2);
             if (btn2) {
@@ -1717,113 +1478,273 @@
             container.appendChild(btn);
         }
     }
-    function init() {
-        ensureRoundRect();
-        initElements();
-        injectIcons();
-        var aboutVer = document.getElementById('aboutVer');
-        if (aboutVer && typeof APP_VERSION !== 'undefined') aboutVer.textContent = 'v' + APP_VERSION;
-        initClockSvg();
-        _ringBgs = document.querySelectorAll('.ring-bg');
-        loadSettings();
-        loadTimers();
-        loadNotified();
-        renderTemplateButtons();
-        bindEvents();
-        // Запускаем tick и tickSvg с сохранением ID
-        _tickRafId = requestAnimationFrame(tick);
-        _tickSvgRafId = requestAnimationFrame(tickSvg);
-        render();
-        initScroll();
-        initKeyboard();
-        initSW();
-        hideSplash();
-        var sh = document.querySelector('.section-hdr');
-        if (sh && timers.length === 0) sh.classList.add('shifted');
-        if (location.search.indexOf('action=add') !== -1) {
-            history.replaceState(null, '', location.pathname);
-            setTimeout(openModal, 600);
-        }
-        updateFilterButtonState();
-        var storedVersion = localStorage.getItem('chronoflow_drag_tip_version');
-        if (storedVersion !== APP_VERSION) {
-            setTimeout(function() {
-                showDragTip();
-                localStorage.setItem('chronoflow_drag_tip_version', APP_VERSION);
-            }, 2500);
-        }
-        // Обработка видимости вкладки – останавливаем анимации при скрытии
-        document.addEventListener('visibilitychange', function() {
-            _pageVisible = !document.hidden;
-            if (!_pageVisible) {
-                // Можно дополнительно отменить кадры, но мы их продолжаем запрашивать с проверкой
-                // Чтобы сэкономить ресурсы, можно приостановить, но мы просто пропускаем обновления внутри tick/tickSvg
+
+    // ===== Инициализация элементов =====
+    function initElements() {
+        svgDayDots = $('dayDots');
+        el.timerList = $('timerList'); el.empty = $('emptyState');
+        el.timerModal = $('timerModal'); el.timerForm = $('timerForm');
+        el.timerTitle = $('timerTitle'); el.timerDate = $('timerDate');
+        el.timerType = $('timerType'); el.mTitle = $('mTitle');
+        el.titleCnt = $('titleCnt'); el.fModal = $('fModal');
+        el.sModal = $('sModal'); el.notif = $('notif');
+        el.importFile = $('importFile'); el.clockSection = $('clockSection');
+        el.addFirstBtn = $('addFirstBtn'); el.saveMoreBtn = $('saveMoreBtn');
+        el.saveMoreRow = $('saveMoreRow'); el.resetTimeBtn = $('resetTimeBtn');
+        el.themeSel = $('themeSel'); el.animToggle = $('animToggle');
+        el.installBtn = $('installBtn'); el.timeAnnounce = $('timeAnnounce');
+        el.offlineDot = $('offlineDot'); el.splash = $('splash');
+        el.scrollPage = $('scrollPage'); el.confirmModal = $('confirmModal');
+        el.datePickerBtn = $('datePickerBtn'); el.hdrSub = $('hdrSub');
+        el.hdrClock = $('hdrClock'); el.hdrH = $('hdrH'); el.hdrM = $('hdrM');
+        el.hdrS = $('hdrS'); el.hdrDate = $('hdrDate');
+        el.searchInput = $('searchInput'); el.searchClear = $('searchClear');
+        el.searchBar = $('searchBar'); el.searchBtn = $('searchBtn');
+        el.addTimerBtn = $('addTimerBtn'); el.timerCategory = $('timerCategory');
+        el.timerRecurring = $('timerRecurring'); el.timerReminder = $('timerReminder');
+        el.catSelect = $('catSelect'); el.sortSelect = $('sortSelect');
+        el.filterBtn = $('filterBtn');
+        el.dateFormat = $('dateFormat');
+        el.weekStart = $('weekStart');
+        el.groupToggle = $('groupToggle');
+        el.notifEnabled = $('notifEnabled');
+        el.notifPeriod = $('notifPeriod');
+        el.praiseEnabled = $('praiseEnabled');
+        el.praiseInterval = $('praiseInterval');
+        el.progressBarWrap = $('progressBarWrap');
+        el.progressLabel = $('progressLabel');
+        el.progressFill = $('progressFill');
+    }
+
+    // ===== События =====
+    function bindEvents() {
+        document.addEventListener('click', function(e) {
+            var cb = e.target.closest('[data-close-modal]');
+            if (cb) {
+                var mid = cb.dataset.closeModal;
+                var m = $(mid);
+                if (m) dismissModal(m);
+                if (mid === 'sModal') closeSettings();
+                history.back();
+                return;
+            }
+            var backdrop = e.target.closest('.modal.show');
+            if (backdrop && !e.target.closest('.mc')) {
+                dismissModal(backdrop);
+                if (backdrop.id === 'sModal') closeSettings();
+                history.back();
             }
         });
-        window.addEventListener('focus', function() {
-            // При возврате фокуса обновляем счётчики
+        if (el.addFirstBtn) el.addFirstBtn.onclick = openModal;
+        if (el.heroAddBtn) el.heroAddBtn.onclick = openModal;
+        if (el.addTimerBtn) el.addTimerBtn.onclick = function() { haptic('light'); openModal(); };
+        if (el.timerForm) el.timerForm.onsubmit = function(e) { e.preventDefault(); saveTimer(false); };
+        if (el.saveMoreBtn) el.saveMoreBtn.onclick = function() { saveTimer(true); };
+        if (el.timerTitle) el.timerTitle.oninput = function() {
+            var l = el.timerTitle.value.length;
+            if (l > MAX_TITLE) el.timerTitle.value = el.timerTitle.value.slice(0, MAX_TITLE);
+            el.titleCnt.textContent = Math.min(l, MAX_TITLE) + '/' + MAX_TITLE;
+        };
+        if (el.datePickerBtn) el.datePickerBtn.onclick = function() {
+            el.timerDate.showPicker ? el.timerDate.showPicker() : el.timerDate.click();
+        };
+        if (el.resetTimeBtn) el.resetTimeBtn.onclick = function() {
+            el.timerDate.value = localISO(new Date()); autoDetectType(); haptic('light');
+        };
+        if (el.timerDate) el.timerDate.addEventListener('change', autoDetectType);
+        // Цвета
+        var cp = $('colorPick'), ccb = $('customColorBtn'), hp = $('hslPopup');
+        var hH = $('hslH'), hS = $('hslS'), hL = $('hslL');
+        var hHv = $('hslHVal'), hSv = $('hslSVal'), hLv = $('hslLVal');
+        var hPrev = $('hslPreview'), hApply = $('hslApply');
+        function updHsl() {
+            var h = parseInt(hH.value), s = parseInt(hS.value), l = parseInt(hL.value);
+            hHv.textContent = h; hSv.textContent = s; hLv.textContent = l;
+            if (hPrev) hPrev.style.background = hslToHex(h,s,l);
+        }
+        if (hH) hH.oninput = updHsl; if (hS) hS.oninput = updHsl; if (hL) hL.oninput = updHsl;
+        if (hApply) hApply.onclick = function() {
+            var hex = hslToHex(parseInt(hH.value), parseInt(hS.value), parseInt(hL.value));
+            selectedColor = hex; selectColor(hex);
+            hp.classList.remove('show'); haptic('light');
+        };
+        if (ccb) ccb.onclick = function() {
+            var hsl = hexToHsl(selectedColor);
+            hH.value = hsl.h; hS.value = hsl.s; hL.value = hsl.l;
+            updHsl(); hp.classList.add('show');
+        };
+        if (cp) cp.onclick = function(e) {
+            var b = e.target.closest('.cp');
+            if (!b || b === ccb) return;
+            selectedColor = b.dataset.c;
+            var all = cp.querySelectorAll('.cp');
+            for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+            b.classList.add('active');
+        };
+        // Фильтры
+        if (el.filterBtn) el.filterBtn.onclick = function() {
+            if (el.sortSelect) el.sortSelect.value = sortBy;
+            if (el.catSelect) el.catSelect.value = categoryFilter;
+            var fs = $('fSelect'); if (fs) fs.value = filter;
+            el.fModal.classList.add('show');
+            trapFocus(el.fModal);
+        };
+        var applyFBtn = $('applyFBtn');
+        if (applyFBtn) applyFBtn.onclick = function() {
+            var fs = $('fSelect'); if (fs) filter = fs.value;
+            if (el.sortSelect) sortBy = el.sortSelect.value;
+            if (el.catSelect) categoryFilter = el.catSelect.value;
+            saveSettings();
+            el.fModal.classList.remove('show');
+            releaseFocus();
             render();
+        };
+        var eib = $('exportImgBtn');
+        if (eib) eib.onclick = function() { el.fModal.classList.remove('show'); releaseFocus(); exportImage(); };
+        if (el.searchBtn) el.searchBtn.onclick = function() {
+            haptic('light');
+            var o = el.searchBar.classList.toggle('open');
+            el.searchBtn.classList.toggle('active', o);
+            if (o) setTimeout(function() { el.searchInput.focus(); }, 200);
+            else { el.searchInput.value = ''; searchQuery = ''; if (el.searchClear) el.searchClear.classList.add('hidden'); render(); }
+        };
+        if (el.searchInput) {
+            el.searchInput.oninput = function() {
+                searchQuery = this.value.trim();
+                if (el.searchClear) el.searchClear.classList.toggle('hidden', !searchQuery);
+                render();
+            };
+            el.searchInput.onkeydown = function(e) { if (e.key === 'Escape') el.searchBtn.click(); };
+        }
+        if (el.searchClear) el.searchClear.onclick = function() {
+            el.searchInput.value = ''; searchQuery = ''; this.classList.add('hidden'); render();
+        };
+        if (el.catSelect) el.catSelect.onchange = function() { categoryFilter = el.catSelect.value; render(); };
+        // Clear
+        var clearBtn = $('clearBtn');
+        if (clearBtn) clearBtn.onclick = function() {
+            showConfirm('Очистить всё', 'Удалить все счётчики?', 'Удалить', function() {
+                timers = []; notifiedTimers = {}; dnd = {};
+                saveNotified(); saveDnd(); saveTimers(); render();
+                toast.info('Очищено');
+            });
+        };
+        requestNotifPermission();
+        var eb = $('exportBtn'); if (eb) eb.onclick = exportJSON;
+        var ib = $('importBtn'); if (ib) ib.onclick = importTimers;
+        var eics = $('exportIcsBtn'); if (eics) eics.onclick = exportICS;
+        if (el.importFile) el.importFile.onchange = handleImport;
+        // Settings
+        if (el.themeSel) el.themeSel.onchange = function() { applyTheme(el.themeSel.value); saveSettings(); };
+        if (el.animToggle) el.animToggle.onchange = function() { anims = el.animToggle.checked; applyAnimPref(); saveSettings(); };
+        if (el.dateFormat) el.dateFormat.onchange = function() { saveSettings(); render(); };
+        if (el.weekStart) el.weekStart.onchange = saveSettings;
+        if (el.groupToggle) el.groupToggle.onchange = function() { saveSettings(); render(); };
+        if (el.notifEnabled) el.notifEnabled.onchange = saveSettings;
+        if (el.notifPeriod) el.notifPeriod.onchange = saveSettings;
+        if (el.praiseEnabled) el.praiseEnabled.onchange = saveSettings;
+        if (el.praiseInterval) el.praiseInterval.onchange = saveSettings;
+        // Switch-rows
+        document.querySelectorAll('.sr:has(.sw)').forEach(function(row) {
+            row.addEventListener('click', function(e) {
+                if (e.target.closest('.sw') || e.target.tagName === 'INPUT') return;
+                var inp = this.querySelector('.sw input');
+                if (inp) { inp.checked = !inp.checked; inp.dispatchEvent(new Event('change', { bubbles: true })); haptic('light'); }
+            });
         });
-    }
-    function showDragTip() {
-        var tip = document.getElementById('dragTip');
-        if (!tip) {
-            tip = document.createElement('div');
-            tip.id = 'dragTip';
-            tip.className = 'drag-tip';
-            tip.innerHTML = '<span class="tip-icon">⇅</span><span>Теперь перетаскивайте счётчики, удерживая палец на ручке с точками.</span><button class="tip-close" aria-label="Закрыть подсказку">✕</button>';
-            document.body.appendChild(tip);
-            tip.querySelector('.tip-close').addEventListener('click', function() {
-                tip.classList.remove('show');
+        // Клик по карточкам
+        if (el.timerList) {
+            el.timerList.addEventListener('click', function(e) {
+                var btn = e.target.closest('.ibtn-s');
+                if (!btn || btn.closest('.tc-handle')) return;
+                var id = btn.dataset.id;
+                haptic('light');
+                if (btn.classList.contains('mute')) toggleDnd(id);
+                else if (btn.classList.contains('ed')) editTimer(id);
+                else if (btn.classList.contains('dl')) delTimer(id);
+                else if (btn.classList.contains('dup')) {
+                    var orig = timers.find(function(x) { return x.id === id; });
+                    if (orig) {
+                        var copy = JSON.parse(JSON.stringify(orig));
+                        copy.id = genId();
+                        copy.title = orig.title + ' (копия)';
+                        copy.created = Date.now();
+                        timers.push(copy);
+                        saveTimers(); render();
+                        toast.success('Дублировано'); haptic('success');
+                    }
+                }
             });
         }
-        tip.classList.add('show');
-        setTimeout(function() { if (tip) tip.classList.remove('show'); }, 6000);
-    }
-    var _pausedAt = null;
-    document.addEventListener('visibilitychange', function() {
-        _pageVisible = !document.hidden;
-        if (document.hidden) { _pausedAt = Date.now(); }
-        else {
-            if (_pausedAt) { var gap = Date.now() - _pausedAt; if (gap > 5000) render(); _pausedAt = null; }
-        }
-    });
-    window.addEventListener('focus', function() {
-        if (_pausedAt) { var gap = Date.now() - _pausedAt; if (gap > 5000) render(); _pausedAt = null; }
-    });
-    if (!isTouch && el.scrollPage) {
-        var _wheelTimer = null;
-        el.scrollPage.addEventListener('wheel', function(e) {
-            if (e.deltaY < 0 && el.scrollPage.scrollTop <= 0 && !_wheelTimer) {
-                _wheelTimer = setTimeout(function() {
-                    var indicator = $('pullIndicator');
-                    if (indicator) {
-                        haptic('medium');
-                        indicator.classList.add('active', 'refreshing');
-                        indicator.style.height = '56px';
-                        indicator.style.opacity = '1';
-                        setTimeout(function() {
-                            render();
-                            indicator.classList.remove('active', 'refreshing');
-                            indicator.style.height = '';
-                            indicator.style.opacity = '';
-                            toast.info('Обновлено');
-                        }, 600);
-                    }
-                    _wheelTimer = null;
-                }, 300);
-            } else if (e.deltaY > 0) {
-                clearTimeout(_wheelTimer);
-                _wheelTimer = null;
+        document.querySelectorAll('.quick-date').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var off = parseInt(this.dataset.offset);
+                var now = new Date(); now.setDate(now.getDate() + off);
+                el.timerDate.value = localISO(now); autoDetectType(); haptic('light');
+            });
+        });
+        // Шаблоны
+        var tplGrid = document.querySelector('.tpl-grid');
+        if (tplGrid) tplGrid.addEventListener('click', function(e) {
+            var btn = e.target.closest('.tpl-btn');
+            if (!btn) return;
+            var tpl = TPL_DATA[btn.dataset.tpl];
+            if (!tpl) return;
+            el.fModal.classList.remove('show'); releaseFocus();
+            editId = null;
+            el.mTitle.textContent = 'Новый счётчик';
+            el.timerTitle.value = tpl.title;
+            var now = new Date();
+            if (tpl.type === 'countdown') now.setDate(now.getDate() + 30);
+            el.timerDate.value = localISO(now);
+            if (el.timerType) el.timerType.value = tpl.type;
+            if (el.timerCategory) el.timerCategory.value = tpl.category || '';
+            if (el.timerRecurring) el.timerRecurring.value = tpl.recurring || '';
+            if (el.timerReminder) el.timerReminder.checked = tpl.reminder || false;
+            el.titleCnt.textContent = tpl.title.length + '/' + MAX_TITLE;
+            selectedColor = tpl.color; selectColor(selectedColor);
+            if (el.saveMoreRow) el.saveMoreRow.style.display = 'none';
+            lastFocus = document.activeElement;
+            history.pushState({ modal: true }, '');
+            el.timerModal.classList.add('show');
+            trapFocus(el.timerModal);
+            setTimeout(function() { el.timerTitle.focus(); }, 100);
+        });
+        var sb = $('settingsBtn');
+        if (sb) sb.onclick = function() { haptic('light'); openSettings(); };
+        // Online/offline
+        window.onoffline = function() {
+            if (el.offlineDot) el.offlineDot.classList.add('show');
+            toast.error('Нет соединения');
+        };
+        window.ononline = function() {
+            if (el.offlineDot) el.offlineDot.classList.remove('show');
+            toast.success('Соединение восстановлено');
+        };
+        if (!navigator.onLine && el.offlineDot) el.offlineDot.classList.add('show');
+        document.onkeydown = function(e) {
+            if (e.key === 'Escape') {
+                var ms = document.querySelectorAll('.modal.show');
+                if (ms.length) { ms.forEach(function(m) { dismissModal(m); }); history.back(); }
             }
-        }, { passive: true });
-    }
-    window.addEventListener('beforeinstallprompt', function(e) {
-        e.preventDefault();
-        installPrompt = e;
-        if (el.installBtn) el.installBtn.classList.remove('hidden');
-    });
-    function bindInstallBtn() {
+        };
+        window.onpopstate = function(e) {
+            if (!e.state || !e.state.modal) {
+                var ms = document.querySelectorAll('.modal.show');
+                if (ms.length) ms.forEach(function(m) { dismissModal(m); });
+            }
+        };
+        window.addEventListener('storage', function(e) {
+            if (e.key === STORAGE_TIMERS) { loadTimers(); render(); }
+            else if (e.key === STORAGE_SETTINGS) loadSettings();
+            else if (e.key === STORAGE_NOTIFIED) loadNotified();
+            else if (e.key === STORAGE_DND) loadDnd();
+        });
+        // Install prompt
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault(); installPrompt = e;
+            if (el.installBtn) el.installBtn.classList.remove('hidden');
+        });
         if (el.installBtn) el.installBtn.onclick = function() {
             if (!installPrompt) return;
             installPrompt.prompt();
@@ -1832,10 +1753,70 @@
             });
         };
     }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() { init(); bindInstallBtn(); });
-    } else {
-        init();
-        bindInstallBtn();
+
+    // ===== Init =====
+    function init() {
+        ensureRoundRect();
+        initElements();
+        injectIcons();
+        var aboutVer = $('aboutVer');
+        if (aboutVer && typeof APP_VERSION !== 'undefined') aboutVer.textContent = 'v' + APP_VERSION;
+        initClockSvg();
+        _ringBgs = document.querySelectorAll('.ring-bg');
+        loadSettings();
+        loadTimers();
+        loadNotified();
+        loadDnd();
+        // IntersectionObserver
+        if ('IntersectionObserver' in window) {
+            intersectionObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    var card = entry.target;
+                    if (entry.isIntersecting) {
+                        card.classList.add('visible');
+                        visibleCards.add(card);
+                        updateCardCounter(card);
+                    } else {
+                        card.classList.remove('visible');
+                        visibleCards.delete(card);
+                    }
+                });
+            }, { root: el.scrollPage, rootMargin: '0px 0px 50px 0px', threshold: 0.05 });
+        }
+        renderTemplateButtons();
+        bindEvents();
+        _tickRafId = requestAnimationFrame(tick);
+        _tickSvgRafId = requestAnimationFrame(tickSvg);
+        render();
+        initScroll();
+        initKeyboard();
+        initDrag();
+        initCardSwipe();
+        initPullToRefresh();
+        initModalSwipe();
+        initSW();
+        hideSplash();
+        loadChangelog();
+        var sh = document.querySelector('.section-hdr');
+        if (sh && timers.length === 0) sh.classList.add('shifted');
+        if (location.search.indexOf('action=add') !== -1) {
+            history.replaceState(null, '', location.pathname);
+            setTimeout(openModal, 600);
+        }
+        var storedVersion = localStorage.getItem(STORAGE_LAST_UPDATE);
+        if (storedVersion !== APP_VERSION) {
+            setTimeout(function() {
+                showDragTip();
+                localStorage.setItem(STORAGE_LAST_UPDATE, APP_VERSION);
+            }, 2500);
+        }
+        document.addEventListener('visibilitychange', function() {
+            _pageVisible = !document.hidden;
+            if (!document.hidden) render();
+        });
+        window.addEventListener('focus', function() { render(); });
     }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
 })();
