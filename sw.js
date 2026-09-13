@@ -16,9 +16,7 @@ var ASSETS = [
 self.addEventListener('install', function(e) {
     e.waitUntil(
         caches.open(STATIC_CACHE).then(function(c) {
-            return Promise.all(ASSETS.map(function(u) {
-                return c.add(u).catch(function() {});
-            }));
+            return Promise.all(ASSETS.map(function(u) { return c.add(u).catch(function() {}); }));
         }).then(function() { return self.skipWaiting(); })
     );
 });
@@ -38,7 +36,6 @@ self.addEventListener('fetch', function(e) {
     if (e.request.method !== 'GET') return;
     var url = new URL(e.request.url);
 
-    // Навигация – Stale-While-Revalidate с fallback на offline.html
     if (e.request.mode === 'navigate') {
         e.respondWith(
             caches.match(e.request).then(function(cached) {
@@ -55,7 +52,6 @@ self.addEventListener('fetch', function(e) {
         return;
     }
 
-    // Статика – Cache First с фоновым обновлением
     if (url.origin === self.location.origin) {
         var isStatic = /\.(js|css|png|svg|json|html|woff2?)$/.test(url.pathname);
         if (isStatic) {
@@ -75,7 +71,6 @@ self.addEventListener('fetch', function(e) {
         }
     }
 
-    // Остальное – сеть → кэш → offline
     e.respondWith(
         fetch(e.request).then(function(r) {
             if (r && r.ok) {

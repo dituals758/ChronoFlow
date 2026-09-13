@@ -2,7 +2,7 @@
     "id": "./",
     "name": "ChronoFlow — Каждый день считается",
     "short_name": "ChronoFlow",
-    "description": "Минималистичный таймер для отслеживания времени. Считайте дни до важных событий или после них. Полностью офлайн.",
+    "description": "Считайте дни до важных событий или после них. Визуальные часы, категории, напоминания. Полностью офлайн.",
     "start_url": "./",
     "scope": "./",
     "display": "standalone",
@@ -22,7 +22,7 @@
     ],
     "screenshots": [
         { "src": "./screen01.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Главный экран с часами и счётчиками" },
-        { "src": "./screen02.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Тёмная тема" },
+        { "src": "./screen02.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Список счётчиков" },
         { "src": "./screen03.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Светлая тема" }
     ],
     "shortcuts": [
