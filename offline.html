@@ -1,44 +1,29 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
-    <title>Нет соединения — ChronoFlow</title>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            background:#000; color:#fff;
-            font:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;
-            min-height: 100vh; min-height: 100dvh;
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
-            padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
-            text-align:center;
-        }
-        .icon { width:64px; height:64px; margin-bottom:24px; opacity:.7; }
-        h1 { font-size:24px; font-weight:700; margin-bottom:8px; letter-spacing:-0.02em; }
-        p { font-size:16px; color:rgba(255,255,255,0.6); max-width:320px; margin-bottom:24px; line-height:1.5; }
-        .btn {
-            display:inline-block; background:#0a84ff; color:#fff;
-            padding:12px 28px; border-radius:12px;
-            text-decoration:none; font-weight:600; font-size:17px;
-            transition:background .15s, transform .15s;
-        }
-        .btn:active { transform:scale(.96); background:#0071e0; }
-        @media (prefers-color-scheme: light) {
-            body { background:#f2f2f7; color:#000; }
-            p { color:rgba(0,0,0,0.6); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<title>Нет соединения — ChronoFlow</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#fff;font:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));text-align:center}
+.icon{width:64px;height:64px;margin-bottom:24px;opacity:.7}
+h1{font-size:24px;font-weight:700;margin-bottom:8px;letter-spacing:-.02em}
+p{font-size:16px;color:rgba(255,255,255,.6);max-width:320px;margin-bottom:24px;line-height:1.5}
+.btn{display:inline-block;background:#0a84ff;color:#fff;padding:12px 28px;border-radius:12px;text-decoration:none;font-weight:600;font-size:17px;transition:background .15s,transform .15s}
+.btn:active{transform:scale(.96);background:#0071e0}
+@media (prefers-color-scheme:light){body{background:#f2f2f7;color:#000}p{color:rgba(0,0,0,.6)}}
+</style>
 </head>
 <body>
-    <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M24 6v6M8 12l4 4M40 12l-4 4M6 24h6M36 24h6M12 36l-4 4M36 36l4 4"/>
-        <circle cx="24" cy="24" r="4" fill="currentColor" stroke="none"/>
-    </svg>
-    <h1>Нет соединения</h1>
-    <p>Похоже, вы потеряли интернет. Но не волнуйтесь — все ваши счётчики уже сохранены на устройстве.</p>
-    <a href="./" class="btn">Вернуться в приложение</a>
+<svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M24 6v6M8 12l4 4M40 12l-4 4M6 24h6M36 24h6M12 36l-4 4M36 36l4 4"/>
+<circle cx="24" cy="24" r="4" fill="currentColor" stroke="none"/>
+</svg>
+<h1>Нет соединения</h1>
+<p>Похоже, вы потеряли интернет. Но не волнуйтесь — все ваши счётчики уже сохранены на устройстве.</p>
+<a href="./" class="btn">Вернуться в приложение</a>
 </body>
 </html>

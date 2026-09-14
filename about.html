@@ -1,70 +1,61 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="robots" content="index, follow">
-    <meta name="description" content="О ChronoFlow — офлайн-таймере для отслеживания событий, привычек и дат.">
-    <title>О ChronoFlow</title>
-    <style>
-        :root { --bg:#000; --text:#fff; --text2:rgba(255,255,255,0.6); --link:#0a84ff; }
-        @media (prefers-color-scheme: light) { :root { --bg:#f2f2f7; --text:#000; --text2:rgba(0,0,0,0.6); } }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            background:var(--bg); color:var(--text);
-            font:18px/1.6 system-ui,-apple-system,sans-serif;
-            max-width:720px; margin:0 auto;
-            padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
-        }
-        a { color:var(--link); text-decoration:none; }
-        a:hover { text-decoration:underline; }
-        .logo { width:64px; height:64px; border-radius:12px; margin-bottom:16px; display:block; }
-        h1 { font-size:28px; font-weight:700; margin-bottom:8px; }
-        h2 { font-size:22px; font-weight:600; margin:24px 0 12px; }
-        p, li { color:var(--text2); }
-        ul { padding-left:20px; }
-        li { margin-bottom:6px; }
-        .back {
-            display:inline-block; margin-top:24px;
-            padding:12px 24px; background:var(--link); color:#fff;
-            border-radius:10px; font-weight:600;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="index, follow">
+<meta name="description" content="О ChronoFlow — офлайн-таймере для отслеживания событий, привычек и дат.">
+<title>О ChronoFlow</title>
+<style>
+:root{--bg:#000;--text:#fff;--text2:rgba(255,255,255,.6);--link:#0a84ff}
+@media (prefers-color-scheme:light){:root{--bg:#f2f2f7;--text:#000;--text2:rgba(0,0,0,.6)}}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font:18px/1.6 system-ui,-apple-system,sans-serif;max-width:720px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+.logo{width:64px;height:64px;border-radius:12px;margin-bottom:16px;display:block}
+h1{font-size:28px;font-weight:700;margin-bottom:8px}
+h2{font-size:22px;font-weight:600;margin:24px 0 12px}
+p,li{color:var(--text2)}
+ul{padding-left:20px}
+li{margin-bottom:6px}
+.back{display:inline-block;margin-top:24px;padding:12px 24px;background:var(--link);color:#fff;border-radius:10px;font-weight:600}
+</style>
 </head>
 <body>
-    <img class="logo" src="./icon.svg" alt="ChronoFlow" width="64" height="64">
-    <h1>О ChronoFlow</h1>
-    <p><strong>ChronoFlow</strong> — офлайн-таймер для отслеживания событий, привычек и дат. Считайте дни до важных событий (отпуск, день рождения) или после них (отказ от курения, начало новой работы).</p>
-    <h2>Для кого это</h2>
-    <ul>
-        <li>Бросающие привычки — видят прогресс и не срываются</li>
-        <li>Планирующие события — знают, сколько осталось</li>
-        <li>Достигающие целей — празднуют юбилеи</li>
-        <li>Любопытные — считают дни с важной даты</li>
-    </ul>
-    <h2>Почему ChronoFlow</h2>
-    <ul>
-        <li>Работает без интернета</li>
-        <li>Не требует регистрации</li>
-        <li>Данные хранятся только на вашем устройстве</li>
-        <li>Открытый код под лицензией MIT</li>
-    </ul>
-    <h2>Технологии</h2>
-    <ul>
-        <li>HTML5, CSS3 — адаптивный дизайн, тёмная/светлая тема</li>
-        <li>JavaScript (чистый ES6+, без фреймворков)</li>
-        <li>Service Worker — офлайн-работа, кэширование</li>
-        <li>localStorage — хранение данных</li>
-    </ul>
-    <h2>Совместимость</h2>
-    <ul>
-        <li>iOS 16+ (iPhone 16 Pro, Dynamic Island)</li>
-        <li>Android 10+ (Chrome)</li>
-        <li>Windows 10+ (Chrome, Edge, Firefox)</li>
-    </ul>
-    <h2>Контакты</h2>
-    <p>Разработчик: <a href="https://github.com/dituals758">dituals758</a></p>
-    <p>AI-соавтор: MiMo Code (Xiaomi MiMo Team)</p>
-    <a href="./" class="back">← Вернуться в приложение</a>
+<img class="logo" src="./icon.svg" alt="ChronoFlow" width="64" height="64">
+<h1>О ChronoFlow</h1>
+<p><strong>ChronoFlow</strong> — офлайн-таймер для отслеживания событий, привычек и дат. Считайте дни до важных событий (отпуск, день рождения) или после них (отказ от курения, начало новой работы).</p>
+<h2>Для кого это</h2>
+<ul>
+<li>Бросающие привычки — видят прогресс и не срываются</li>
+<li>Планирующие события — знают, сколько осталось</li>
+<li>Достигающие целей — празднуют юбилеи</li>
+<li>Любопытные — считают дни с важной даты</li>
+</ul>
+<h2>Почему ChronoFlow</h2>
+<ul>
+<li>Работает без интернета</li>
+<li>Не требует регистрации</li>
+<li>Данные хранятся только на вашем устройстве</li>
+<li>Открытый код под лицензией MIT</li>
+</ul>
+<h2>Технологии</h2>
+<ul>
+<li>HTML5, CSS3 — адаптивный дизайн, тёмная/светлая тема</li>
+<li>JavaScript (чистый ES6+, без фреймворков)</li>
+<li>Service Worker — офлайн-работа, кэширование</li>
+<li>localStorage — хранение данных</li>
+</ul>
+<h2>Совместимость</h2>
+<ul>
+<li>iOS 16+ (iPhone 16 Pro, Dynamic Island)</li>
+<li>Android 10+ (Chrome)</li>
+<li>Windows 10+ (Chrome, Edge, Firefox)</li>
+</ul>
+<h2>Контакты</h2>
+<p>Разработчик: <a href="https://github.com/dituals758">dituals758</a></p>
+<p>AI-соавтор: MiMo Code (Xiaomi MiMo Team)</p>
+<a href="./" class="back">← Вернуться в приложение</a>
 </body>
 </html>
