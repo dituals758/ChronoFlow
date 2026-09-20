@@ -24,7 +24,7 @@
 <meta property="twitter:card" content="summary_large_image">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:;">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebApplication","name":"ChronoFlow","description":"Считайте дни до важных событий или после них. Визуальные часы, категории, напоминания. Полностью офлайн PWA.","applicationCategory":"Productivity","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"dituals758","url":"https://github.com/dituals758"},"softwareVersion":"2026.09.14.1"}
+{"@context":"https://schema.org","@type":"WebApplication","name":"ChronoFlow","description":"Считайте дни до важных событий или после них. Визуальные часы, категории, напоминания. Полностью офлайн PWA.","applicationCategory":"Productivity","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"dituals758","url":"https://github.com/dituals758"},"softwareVersion":"2026.09.20"}
 </script>
 <title>ChronoFlow</title>
 <link rel="manifest" href="./manifest.json">
@@ -90,21 +90,27 @@
 <div class="scroll-page" id="scrollPage" aria-label="Основной контент">
 <section id="clockSection" role="region" aria-label="Часы">
 <div class="clock-wrap" id="clockWrap">
+<div class="clock-stage">
 <div class="clock-glass" id="clockGlass" role="img" aria-label="Часы с циферблатом">
 <svg class="clock-svg" id="clockSvg" viewBox="0 0 200 200" aria-hidden="true">
 <defs>
 <filter id="dotGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur in="SourceGraphic" stdDeviation="1.5"/></filter>
+<filter id="activeDotGlow" x="-200%" y="-200%" width="500%" height="500%">
+<feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/>
+<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
 <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0a84ff"/><stop offset="100%" stop-color="#5e5ce6"/></linearGradient>
 <linearGradient id="dayRingGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#30d158"/><stop offset="100%" stop-color="#34c759"/></linearGradient>
 </defs>
+<g id="stars"></g>
 <circle class="ring-bg" cx="100" cy="100" r="88" fill="none" stroke-width="3"/>
 <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="88" fill="none" stroke-width="3" stroke-linecap="round" transform="rotate(-90 100 100)" stroke="url(#ringGrad)"/>
 <circle class="ring-bg day-ring" cx="100" cy="100" r="76" fill="none" stroke-width="3"/>
 <g id="hourSegments"></g>
 <g class="day-dots" id="dayDots"></g>
-<line id="eventArrow" x1="100" y1="100" x2="100" y2="76" stroke-width="1.5" stroke-linecap="round" opacity="0"/>
+<line id="eventArrow" x1="100" y1="45" x2="100" y2="21" stroke-width="1.5" stroke-linecap="round" opacity="0"/>
+<circle id="clockWave" cx="100" cy="12" r="1.5" fill="currentColor" opacity="0"/>
 <circle id="activeEventDot" cx="100" cy="100" r="0" fill="currentColor" opacity="0"/>
-<text id="moonPhase" x="172" y="38" text-anchor="middle" class="svg-moon"></text>
 <text id="svgDay" x="100" y="52" text-anchor="middle" fill="currentColor" class="svg-text svg-day"></text>
 <text id="svgSt" x="100" y="64" text-anchor="middle" fill="currentColor" class="svg-text svg-st"></text>
 <text id="svgTime" x="100" y="108" text-anchor="middle" fill="currentColor" class="svg-text svg-time"></text>
@@ -113,6 +119,8 @@
 <g id="svgTicks"></g>
 </svg>
 <div class="sr-only" id="timeAnnounce"></div>
+</div>
+<div class="moon-badge" id="moonPhase" aria-hidden="true"></div>
 </div>
 </div>
 <div class="hero-cta" id="heroCta">
@@ -136,8 +144,12 @@
 <input type="text" id="searchInput" class="search-input" placeholder="Найти счётчик..." autocomplete="off">
 <button id="searchClear" class="search-clear hidden" aria-label="Очистить поиск"></button>
 </div>
+<div id="skeleton" class="skeleton-wrap" aria-hidden="true">
+<div class="skeleton"><div class="sk-line"></div><div class="sk-line short"></div><div class="sk-block"></div></div>
+<div class="skeleton"><div class="sk-line"></div><div class="sk-line short"></div><div class="sk-block"></div></div>
+</div>
 <div id="timerList" role="list" aria-label="Список счётчиков"></div>
-<div id="emptyState" class="empty" role="status">
+<div id="emptyState" class="empty hidden" role="status">
 <div class="empty-anim" aria-hidden="true">
 <div class="empty-circle"></div>
 <div class="empty-icon">
@@ -332,6 +344,8 @@
 </select></div></div>
 <div class="sr"><label for="animToggle">Анимации</label>
 <label class="sw"><input type="checkbox" id="animToggle" checked><span class="sl"></span></label></div>
+<div class="sr"><label for="soundToggle">Звуки</label>
+<label class="sw"><input type="checkbox" id="soundToggle"><span class="sl"></span></label></div>
 <div class="sr"><label for="dateFormat">Формат даты</label>
 <div class="select-wrap select-sm"><select id="dateFormat">
 <option value="DD.MM.YYYY">ДД.ММ.ГГГГ</option>
@@ -425,9 +439,9 @@
 <div class="sg">
 <h3>Что нового</h3>
 <div class="changelog" id="changelogBlock">
-<h4 id="changelogTitle">Версия 2026.09.14.1</h4>
+<h4 id="changelogTitle">Версия 2026.09.20</h4>
 <ul id="changelogList"><li>Загрузка…</li></ul>
-<span class="date" id="changelogDate">Выпущено 14 сентября 2026 г.</span>
+<span class="date" id="changelogDate">Выпущено 20 сентября 2026 г.</span>
 </div>
 </div>
 </div>
