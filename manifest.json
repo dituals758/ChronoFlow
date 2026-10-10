@@ -14,6 +14,7 @@
 "dir":"ltr",
 "categories":["productivity","utilities"],
 "handle_links":"preferred",
+"version":"2026.10.10",
 "icons":[
 {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},
 {"src":"./icon-180.png","sizes":"180x180","type":"image/png","purpose":"any"},
@@ -23,7 +24,9 @@
 "screenshots":[
 {"src":"./screen01.png","sizes":"390x844","type":"image/png","form_factor":"narrow","label":"Главный экран с часами и счётчиками"},
 {"src":"./screen02.png","sizes":"390x844","type":"image/png","form_factor":"narrow","label":"Список счётчиков"},
-{"src":"./screen03.png","sizes":"390x844","type":"image/png","form_factor":"narrow","label":"Светлая тема"}
+{"src":"./screen03.png","sizes":"390x844","type":"image/png","form_factor":"narrow","label":"Светлая тема"},
+{"src":"./screen04.png","sizes":"390x844","type":"image/png","form_factor":"narrow","label":"Настройки"},
+{"src":"./screen05.png","sizes":"390x844","type":"image/png","form_factor":"narrow","label":"Редактирование счётчика"}
 ],
 "shortcuts":[
 {"name":"Новый счётчик","short_name":"Добавить","url":"./?action=add","icons":[{"src":"./icon-192.png","sizes":"192x192"}]}
