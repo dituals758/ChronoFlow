@@ -3,35 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
 <meta name="robots" content="index, follow">
-<meta name="description" content="О ChronoFlow — офлайн-таймере для отслеживания событий, привычек и дат.">
+<meta name="description" content="О ChronoFlow — офлайн-таймере с секундной точностью для отслеживания событий, привычек и дат.">
 <title>О ChronoFlow</title>
+<link rel="stylesheet" href="./static.css">
 <style>
-:root{--bg:#000;--text:#fff;--text2:rgba(255,255,255,.6);--link:#0a84ff}
-@media (prefers-color-scheme:light){:root{--bg:#f2f2f7;--text:#000;--text2:rgba(0,0,0,.6)}}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font:18px/1.6 system-ui,-apple-system,sans-serif;max-width:720px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
-a{color:var(--link);text-decoration:none}
-a:hover{text-decoration:underline}
+body{max-width:720px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+h1:first-of-type{margin-top:0}
 .logo{width:64px;height:64px;border-radius:12px;margin-bottom:16px;display:block}
-h1{font-size:28px;font-weight:700;margin-bottom:8px}
-h2{font-size:22px;font-weight:600;margin:24px 0 12px}
-p,li{color:var(--text2)}
-ul{padding-left:20px}
-li{margin-bottom:6px}
-.back{display:inline-block;margin-top:24px;padding:12px 24px;background:var(--link);color:#fff;border-radius:10px;font-weight:600}
+.back{display:inline-block;margin-top:24px;padding:12px 24px;background:var(--blue);color:#fff;border-radius:10px;font-weight:600;font-size:17px;text-decoration:none}
+.back:hover{text-decoration:none}
 </style>
 </head>
 <body>
 <img class="logo" src="./icon.svg" alt="ChronoFlow" width="64" height="64">
 <h1>О ChronoFlow</h1>
-<p><strong>ChronoFlow</strong> — офлайн-таймер для отслеживания событий, привычек и дат. Считайте дни до важных событий (отпуск, день рождения) или после них (отказ от курения, начало новой работы).</p>
+<p><strong>ChronoFlow</strong> — офлайн-таймер для отслеживания событий, привычек и дат. Считайте дни, часы, минуты и секунды до важных событий (отпуск, день рождения) или после них (отказ от курения, начало новой работы).</p>
+<h2>Секундная точность — наша фишка</h2>
+<p>ChronoFlow обновляет счётчики <strong>каждую секунду</strong>. Вы видите не только «45 дней», но и точное количество часов, минут и секунд. Это не баг и не избыточность — это осознанная особенность. Такой уровень детализации помогает чувствовать прогресс, особенно в первые дни отказа от привычки или в ожидании важного события.</p>
 <h2>Для кого это</h2>
 <ul>
-<li>Бросающие привычки — видят прогресс и не срываются</li>
-<li>Планирующие события — знают, сколько осталось</li>
+<li>Бросающие привычки — видят прогресс с точностью до секунды и не срываются</li>
+<li>Планирующие события — знают, сколько осталось с точностью до минуты</li>
 <li>Достигающие целей — празднуют юбилеи</li>
-<li>Любопытные — считают дни с важной даты</li>
+<li>Любопытные — считают секунды с важной даты</li>
 </ul>
 <h2>Почему ChronoFlow</h2>
 <ul>

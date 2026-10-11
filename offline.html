@@ -6,15 +6,13 @@
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
 <title>Нет соединения — ChronoFlow</title>
+<link rel="stylesheet" href="./static.css">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;color:#fff;font:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));text-align:center}
-.icon{width:64px;height:64px;margin-bottom:24px;opacity:.7}
-h1{font-size:24px;font-weight:700;margin-bottom:8px;letter-spacing:-.02em}
-p{font-size:16px;color:rgba(255,255,255,.6);max-width:320px;margin-bottom:24px;line-height:1.5}
-.btn{display:inline-block;background:#0a84ff;color:#fff;padding:12px 28px;border-radius:12px;text-decoration:none;font-weight:600;font-size:17px;transition:background .15s,transform .15s}
-.btn:active{transform:scale(.96);background:#0071e0}
-@media (prefers-color-scheme:light){body{background:#f2f2f7;color:#000}p{color:rgba(0,0,0,.6)}}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom))}
+.icon{width:64px;height:64px;margin-bottom:24px;opacity:.7;color:var(--text)}
+h1{font-size:24px;margin:0 0 8px}
+p{font-size:16px;color:var(--text2);max-width:320px;margin-bottom:24px;line-height:1.5}
+.btn{font-size:17px;padding:12px 28px;border-radius:12px}
 </style>
 </head>
 <body>
@@ -23,7 +21,7 @@ p{font-size:16px;color:rgba(255,255,255,.6);max-width:320px;margin-bottom:24px;l
 <circle cx="24" cy="24" r="4" fill="currentColor" stroke="none"/>
 </svg>
 <h1>Нет соединения</h1>
-<p>Похоже, вы потеряли интернет. Но не волнуйтесь — все ваши счётчики уже сохранены на устройстве.</p>
+<p>Похоже, вы потеряли интернет. Но не волнуйтесь — все ваши счётчики уже сохранены на устройстве. Секундная точность не пострадала.</p>
 <a href="./" class="btn">Вернуться в приложение</a>
 </body>
 </html>
