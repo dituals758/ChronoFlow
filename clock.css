@@ -1,0 +1,26 @@
+.clock-stage{position:relative}
+.clock-bg{position:absolute;inset:-20px;z-index:0;border-radius:50%;overflow:hidden;pointer-events:none;-webkit-mask-image:radial-gradient(circle,#000 60%,transparent 95%);mask-image:radial-gradient(circle,#000 60%,transparent 95%)}
+.clock-bg-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cf-crosshair{animation:cfCrosshairPulse 4s ease-in-out infinite}
+@keyframes cfCrosshairPulse{0%,100%{opacity:.6}50%{opacity:1}}
+.clock-corner{position:absolute;display:flex;flex-direction:column;gap:2px;font-family:var(--fd,'SF Mono',ui-monospace,monospace);font-size:9px;line-height:1;letter-spacing:.08em;color:rgba(10,132,255,.5);text-transform:uppercase;pointer-events:none;user-select:none;-webkit-user-select:none}
+.clock-corner-label{font-size:7px;opacity:.6;font-weight:600}
+.clock-corner-value{font-size:10px;color:var(--bl,#0a84ff);font-weight:500}
+.clock-corner-tl{top:18px;left:22px}
+.clock-corner-tr{top:18px;right:22px;text-align:right;align-items:flex-end}
+.clock-corner-bl{bottom:18px;left:22px}
+.clock-corner-br{bottom:18px;right:22px;text-align:right;align-items:flex-end}
+.clock-status-online{color:var(--ok,#30d158);animation:cfStatusPulse 2s ease-in-out infinite}
+.clock-status-offline{color:var(--er,#ff453a);animation:none}
+@keyframes cfStatusPulse{0%,100%{opacity:1}50%{opacity:.5}}
+.clock-day-progress{position:absolute;left:22px;right:22px;bottom:8px;height:1px;background:rgba(10,132,255,.1);overflow:hidden;border-radius:1px}
+.clock-day-progress-fill{height:100%;background:linear-gradient(90deg,#0a84ff,#bf5af2);width:0%;transition:width 1s linear;box-shadow:0 0 8px #0a84ff}
+.lt .clock-bg{-webkit-mask-image:radial-gradient(circle,#000 55%,transparent 90%);mask-image:radial-gradient(circle,#000 55%,transparent 90%)}
+.lt .clock-corner{color:rgba(0,122,255,.4)}
+.lt .clock-corner-value{color:#007aff}
+.lt .clock-day-progress{background:rgba(0,122,255,.1)}
+.lt .clock-day-progress-fill{background:linear-gradient(90deg,#007aff,#af52de);box-shadow:0 0 6px rgba(0,122,255,.6)}
+@media (max-width:420px){.clock-corner{font-size:7px}.clock-corner-label{font-size:6px}.clock-corner-value{font-size:8px}.clock-corner-tl{top:14px;left:18px}.clock-corner-tr{top:14px;right:18px}.clock-corner-bl{bottom:14px;left:18px}.clock-corner-br{bottom:14px;right:18px}.clock-day-progress{left:18px;right:18px;bottom:6px}}
+@media (min-width:1024px){.clock-corner{font-size:10px}.clock-corner-label{font-size:8px}.clock-corner-value{font-size:11px}}
+@media (prefers-reduced-motion:reduce){.clock-status-online{animation:none}.cf-crosshair{animation:none}.clock-day-progress-fill{transition:none}}
+@media (prefers-reduced-transparency:reduce){.clock-bg{opacity:1}}
