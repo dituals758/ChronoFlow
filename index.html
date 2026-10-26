@@ -12,47 +12,65 @@
 <meta name="apple-mobile-web-app-title" content="ChronoFlow">
 <meta name="format-detection" content="telephone=no">
 <meta name="description" content="ChronoFlow — офлайн-таймер с секундной точностью. Считайте дни, часы и минуты до событий или после них. Без регистрации, работает офлайн.">
-<meta name="keywords" content="таймер,счётчик дней,секундная точность,офлайн PWA,сколько прошло,сколько осталось,привычки,даты">
-<meta name="author" content="dituals758">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://dituals758.github.io/ChronoFlow/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dituals758.github.io/ChronoFlow/">
 <meta property="og:title" content="ChronoFlow — Считайте дни до событий">
-<meta property="og:description" content="Не курю 45 дней. До отпуска 128 дней. Точность до секунды. Визуальные счётчики для всего, что важно. Офлайн PWA.">
+<meta property="og:description" content="Не курю 45 дней. До отпуска 128 дней. Точность до секунды. Офлайн PWA.">
 <meta property="og:image" content="https://dituals758.github.io/ChronoFlow/og-image.png">
-<meta property="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="summary_large_image">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self';style-src 'self' 'unsafe-inline';script-src 'self';img-src 'self' data:;connect-src 'self';font-src 'self';object-src 'none';base-uri 'self';form-action 'self';manifest-src 'self';worker-src 'self'">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ChronoFlow","description":"Считайте дни, часы, минуты и секунды до важных событий или после них. Секундная точность. Офлайн PWA.","applicationCategory":"Productivity","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"dituals758","url":"https://github.com/dituals758"},"softwareVersion":"2026.10.14"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ChronoFlow","description":"Считайте дни, часы, минуты и секунды до важных событий или после них. Секундная точность. Офлайн PWA.","applicationCategory":"Productivity","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"dituals758","url":"https://github.com/dituals758"},"softwareVersion":"2026.10.26"}</script>
 <title>ChronoFlow — Считайте дни до событий</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
 <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
+<!-- 1. Critical CSS инлайн — первый paint без ожидания -->
+<style>
+:root{--bg:#000;--sf:#1c1c1e;--sf2:#2c2c2e;--sf3:#3a3a3c;--st:rgba(84,84,88,.65);--t1:#fff;--t2:rgba(255,255,255,.6);--t3:rgba(255,255,255,.3);--bl:#0a84ff;--blb:rgba(10,132,255,.18);--blh:rgba(10,132,255,.24);--ok:#30d158;--okb:rgba(48,209,88,.18);--er:#ff453a;--erb:rgba(255,69,58,.18);--pu:#bf5af2;--gr:linear-gradient(135deg,#0a84ff,#5e5ce6);--fn:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display',system-ui,sans-serif;--fd:'SF Mono',ui-monospace,monospace;--r-sm:8px;--r-md:10px;--r-lg:14px;--r-xl:18px;--r-pill:9999px;--ease-out:cubic-bezier(.16,1,.3,1);--dur-fast:.15s;--dur-base:.3s}
+.lt{--bg:#f2f2f7;--sf:#fff;--sf2:#f2f2f7;--sf3:#e5e5ea;--st:rgba(60,60,67,.29);--t1:#000;--t2:rgba(0,0,0,.6);--t3:rgba(0,0,0,.3);--bl:#007aff;--blb:rgba(0,122,255,.12);--blh:rgba(0,122,255,.20);--ok:#34c759;--okb:rgba(52,199,89,.12);--er:#ff3b30;--erb:rgba(255,59,48,.12);--pu:#af52de;--gr:linear-gradient(135deg,#007aff,#5856d6)}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{width:100%;height:100%;overflow:hidden;background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+body{position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);color:var(--t1);font:400 17px/22px var(--fn);overscroll-behavior-y:none;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+header{position:relative;flex-shrink:0;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;background:rgba(28,28,30,.92);border-bottom:.33px solid var(--st);z-index:100}
+main{flex:1;min-height:0;overflow:hidden;position:relative}
+.scroll-page{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,16px)}
+#clockSection{max-width:100%;margin:0 auto;padding:0 16px}
+.clock-wrap{display:flex;flex-direction:column;align-items:center;padding:20px 0 16px;position:relative;z-index:1}
+.clock-stage{position:relative;width:clamp(260px,60vmin,380px);max-width:100%;aspect-ratio:1}
+.clock-glass{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 30% 30%,var(--sf2),var(--sf));transform:translateZ(0)}
+.splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+.splash-inner{text-align:center;width:100%}
+.splash-logo{display:flex;justify-content:center;margin-bottom:20px}
+.splash-name{font:700 34px/42px var(--fn);letter-spacing:-.02em;margin-bottom:4px;background:var(--gr);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.splash-sub{font:400 14px/20px var(--fn);color:var(--t3);margin-bottom:24px}
+.splash-bar{width:160px;height:3px;background:var(--sf3);border-radius:9999px;overflow:hidden;margin:0 auto}
+.splash-bar-fill{width:0;height:100%;background:var(--gr);animation:splashLoad 1.2s var(--ease-out) .5s forwards}
+@keyframes splashLoad{to{width:100%}}
+</style>
+
+<!-- 2. Preload остального — параллельный fetch -->
+<link rel="preload" href="./styles.css" as="style">
+<link rel="preload" href="./clock.css" as="style">
+
+<!-- 3. Базовые стили — ПЕРВЫМИ -->
+<link rel="stylesheet" href="./styles.css">
+
+<!-- 4. Модуль часов — ПОСЛЕДНИМ (переопределяет базовые) -->
+<link rel="stylesheet" href="./clock.css">
+
+<!-- 5. Preload скриптов -->
 <link rel="preload" href="./app.js" as="script">
 <link rel="preload" href="./clock.js" as="script">
-<link rel="preload" href="./styles.css" as="style">
-<link rel="stylesheet" href="./clock.css">
-<link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 <a href="#main" class="skip-link">Перейти к содержимому</a>
 <div id="splash" class="splash" aria-hidden="true">
 <div class="splash-inner">
-<div class="splash-logo">
-<svg width="80" height="80" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-<defs><linearGradient id="splashGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0a84ff"/><stop offset="100%" stop-color="#5e5ce6"/></linearGradient></defs>
-<rect x="10" y="4" width="28" height="3" rx="1.5" fill="url(#splashGrad)"/>
-<rect x="10" y="41" width="28" height="3" rx="1.5" fill="url(#splashGrad)"/>
-<path d="M13 7h22v4c0 5-3 9-7 12l-4 3-4-3c-4-3-7-7-7-12V7z" stroke="url(#splashGrad)" stroke-width="1.5" fill="none"/>
-<path d="M13 41h22v-4c0-5-3-9-7-12l-4-3-4 3c-4 3-7 7-7 12v4z" stroke="url(#splashGrad)" stroke-width="1.5" fill="none" opacity=".5"/>
-<path d="M24 20v8" stroke="url(#splashGrad)" stroke-width="1.5" stroke-linecap="round" opacity=".35"><animate attributeName="opacity" values=".15;.5;.15" dur="1.8s" repeatCount="indefinite"/></path>
-<circle cx="22" cy="36" r="1.5" fill="url(#splashGrad)" opacity=".4"><animate attributeName="cy" values="36;38;36" dur="2s" repeatCount="indefinite"/></circle>
-<circle cx="26" cy="37" r="1" fill="url(#splashGrad)" opacity=".25"><animate attributeName="cy" values="37;38.5;37" dur="2.4s" repeatCount="indefinite"/></circle>
-<circle cx="24" cy="38" r="1.2" fill="url(#splashGrad)" opacity=".35"><animate attributeName="cy" values="38;39;38" dur="1.6s" repeatCount="indefinite"/></circle>
-</svg>
-</div>
+<div class="splash-logo"><svg width="80" height="80" viewBox="0 0 48 48" fill="none" aria-hidden="true"><defs><linearGradient id="splashGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0a84ff"/><stop offset="100%" stop-color="#5e5ce6"/></linearGradient></defs><rect x="10" y="4" width="28" height="3" rx="1.5" fill="url(#splashGrad)"/><rect x="10" y="41" width="28" height="3" rx="1.5" fill="url(#splashGrad)"/><path d="M13 7h22v4c0 5-3 9-7 12l-4 3-4-3c-4-3-7-7-7-12V7z" stroke="url(#splashGrad)" stroke-width="1.5" fill="none"/><path d="M13 41h22v-4c0-5-3-9-7-12l-4-3-4 3c-4 3-7 7-7 12v4z" stroke="url(#splashGrad)" stroke-width="1.5" fill="none" opacity=".5"/><path d="M24 20v8" stroke="url(#splashGrad)" stroke-width="1.5" stroke-linecap="round" opacity=".35"><animate attributeName="opacity" values=".15;.5;.15" dur="1.8s" repeatCount="indefinite"/></path><circle cx="22" cy="36" r="1.5" fill="url(#splashGrad)" opacity=".4"><animate attributeName="cy" values="36;38;36" dur="2s" repeatCount="indefinite"/></circle><circle cx="26" cy="37" r="1" fill="url(#splashGrad)" opacity=".25"><animate attributeName="cy" values="37;38.5;37" dur="2.4s" repeatCount="indefinite"/></circle><circle cx="24" cy="38" r="1.2" fill="url(#splashGrad)" opacity=".35"><animate attributeName="cy" values="38;39;38" dur="1.6s" repeatCount="indefinite"/></circle></svg></div>
 <div class="splash-name accent-text">ChronoFlow</div>
 <div class="splash-sub">Время на вашей стороне</div>
 <div class="splash-bar"><div class="splash-bar-fill"></div></div>
@@ -69,7 +87,7 @@
 </div>
 </div>
 <div class="hdr-right">
-<div class="hdr-clock" id="hdrClock" style="opacity:0;transform:translateY(-6px);"><span id="hdrH">00</span><span class="hdr-colon">:</span><span id="hdrM">00</span><span class="hdr-colon">:</span><span id="hdrS">00</span> <span class="hdr-date" id="hdrDate"></span></div>
+<div class="hdr-clock" id="hdrClock"><span id="hdrH">00</span><span class="hdr-colon">:</span><span id="hdrM">00</span><span class="hdr-colon">:</span><span id="hdrS">00</span> <span class="hdr-date" id="hdrDate"></span></div>
 <button id="settingsBtn" class="ibtn-s" aria-label="Настройки" title="Настройки"></button>
 <button id="installBtn" class="ibtn-s hidden" aria-label="Установить" title="Установить"></button>
 </div>
@@ -86,7 +104,6 @@
 <filter id="dotGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur in="SourceGraphic" stdDeviation="1.5"/></filter>
 <filter id="activeDotGlow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0a84ff"/><stop offset="100%" stop-color="#5e5ce6"/></linearGradient>
-<linearGradient id="dayRingGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#30d158"/><stop offset="100%" stop-color="#34c759"/></linearGradient>
 </defs>
 <g id="stars"></g>
 <circle class="ring-bg" cx="100" cy="100" r="88" fill="none" stroke-width="3"/>
@@ -94,7 +111,6 @@
 <circle class="ring-bg day-ring" cx="100" cy="100" r="76" fill="none" stroke-width="3"/>
 <g id="hourSegments"></g>
 <g class="day-dots" id="dayDots"></g>
-<circle id="clockWave" cx="100" cy="12" r="1.5" fill="currentColor" opacity="0"/>
 <circle id="activeEventDot" cx="100" cy="100" r="0" fill="currentColor" opacity="0"/>
 <text id="svgDay" x="100" y="52" text-anchor="middle" fill="currentColor" class="svg-text svg-day"></text>
 <text id="svgSt" x="100" y="64" text-anchor="middle" fill="currentColor" class="svg-text svg-st"></text>
@@ -105,7 +121,7 @@
 </svg>
 <div class="sr-only" id="timeAnnounce" role="status" aria-live="polite" aria-atomic="true"></div>
 </div>
-<div class="moon-wrap">
+<div class="moon-wrap" id="moonWrap" role="button" tabindex="0" aria-label="Информация о Луне">
 <div class="moon-badge" id="moonPhase" aria-hidden="true"></div>
 <div class="moon-label" id="moonLabel" aria-hidden="true"></div>
 </div>
@@ -126,7 +142,7 @@
 <button id="filterBtn" class="ibtn-s" aria-label="Фильтры" title="Фильтры"></button>
 </div>
 </div>
-<div class="search-bar" id="searchBar">
+<div class="search-bar" id="searchBar" aria-hidden="true">
 <label for="searchInput" class="sr-only">Поиск по названию счётчика</label>
 <input type="text" id="searchInput" class="search-input" placeholder="Найти счётчик..." autocomplete="off" enterkeyhint="search">
 <button id="searchClear" class="search-clear hidden" aria-label="Очистить поиск"></button>
@@ -139,19 +155,7 @@
 <div id="emptyState" class="empty hidden" role="status">
 <div class="empty-anim" aria-hidden="true">
 <div class="empty-circle"></div>
-<div class="empty-icon">
-<svg width="40" height="40" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-<defs><linearGradient id="emptyGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="var(--bl)"/><stop offset="100%" stop-color="var(--pu)"/></linearGradient></defs>
-<rect x="10" y="4" width="28" height="3" rx="1.5" fill="url(#emptyGrad)"/>
-<rect x="10" y="41" width="28" height="3" rx="1.5" fill="url(#emptyGrad)"/>
-<path d="M13 7h22v4c0 5-3 9-7 12l-4 3-4-3c-4-3-7-7-7-12V7z" stroke="url(#emptyGrad)" stroke-width="1.5" fill="none"/>
-<path d="M13 41h22v-4c0-5-3-9-7-12l-4-3-4 3c-4 3-7 7-7 12v4z" stroke="url(#emptyGrad)" stroke-width="1.5" fill="none" opacity=".5"/>
-<path d="M24 20v8" stroke="url(#emptyGrad)" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
-<circle cx="22" cy="36" r="1.5" fill="url(#emptyGrad)" opacity=".4"/>
-<circle cx="26" cy="37" r="1" fill="url(#emptyGrad)" opacity=".25"/>
-<circle cx="24" cy="38" r="1.2" fill="url(#emptyGrad)" opacity=".35"/>
-</svg>
-</div>
+<div class="empty-icon"><svg width="40" height="40" viewBox="0 0 48 48" fill="none" aria-hidden="true"><defs><linearGradient id="emptyGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="var(--bl)"/><stop offset="100%" stop-color="var(--pu)"/></linearGradient></defs><rect x="10" y="4" width="28" height="3" rx="1.5" fill="url(#emptyGrad)"/><rect x="10" y="41" width="28" height="3" rx="1.5" fill="url(#emptyGrad)"/><path d="M13 7h22v4c0 5-3 9-7 12l-4 3-4-3c-4-3-7-7-7-12V7z" stroke="url(#emptyGrad)" stroke-width="1.5" fill="none"/><path d="M13 41h22v-4c0-5-3-9-7-12l-4-3-4 3c-4 3-7 7-7 12v4z" stroke="url(#emptyGrad)" stroke-width="1.5" fill="none" opacity=".5"/><path d="M24 20v8" stroke="url(#emptyGrad)" stroke-width="1.5" stroke-linecap="round" opacity=".35"/><circle cx="22" cy="36" r="1.5" fill="url(#emptyGrad)" opacity=".4"/><circle cx="26" cy="37" r="1" fill="url(#emptyGrad)" opacity=".25"/><circle cx="24" cy="38" r="1.2" fill="url(#emptyGrad)" opacity=".35"/></svg></div>
 </div>
 <h3 id="emptyTitle" class="grad-text"></h3>
 <p id="emptyBody"></p>
@@ -167,7 +171,7 @@
 <div class="mc-scroll">
 <div class="mh"><h2 id="mTitle" class="grad-text">Новый счётчик</h2><button class="ibtn-s" data-close-modal aria-label="Закрыть" title="Закрыть"></button></div>
 <form id="timerForm" novalidate>
-<div class="fg"><label for="timerTitle">Название</label><input id="timerTitle" required placeholder="Как вы хотите это запомнить?" autocomplete="off" aria-required="true"><span class="cc" id="titleCnt"></span></div>
+<div class="fg"><label for="timerTitle">Название</label><input id="timerTitle" required placeholder="Как вы хотите это запомнить?" autocomplete="off" aria-required="true" maxlength="50"><span class="cc" id="titleCnt"></span></div>
 <div class="fg">
 <label for="timerDate">Дата и время</label>
 <div class="date-input-wrap">
@@ -191,11 +195,11 @@
 <input type="text" id="customColorHex" class="hex-input" maxlength="7" placeholder="#RRGGBB" autocomplete="off" spellcheck="false" aria-label="HEX-код цвета">
 </div>
 </div>
-<div class="fg"><label for="timerCategory">Категория</label><div class="select-wrap"><select id="timerCategory"><option value="">Без категории</option><option value="work">Работа</option><option value="health">Здоровье</option><option value="personal">Личное</option><option value="study">Учёба</option><option value="travel">Путешествия</option></select></div></div>
+<div class="fg"><label for="timerCategory">Категория</label><div class="select-wrap"><select id="timerCategory"></select></div></div>
 <div class="fg"><label for="timerRecurring">Повтор</label><div class="select-wrap"><select id="timerRecurring"><option value="">Одноразовый</option><option value="weekly">Каждую неделю</option><option value="monthly">Каждый месяц</option><option value="yearly">Каждый год</option></select></div></div>
-<div class="fg"><div class="sr"><label for="timerReminder">Напоминание</label><label class="sw"><input type="checkbox" id="timerReminder"><span class="sl"></span></label></div></div>
+<div class="fg"><div class="sr sr-switch"><label for="timerReminder">Напоминание</label><label class="sw"><input type="checkbox" id="timerReminder"><span class="sl"></span></label></div></div>
 <div class="fa"><button type="button" class="btn-s" data-close-modal>Отмена</button><button type="submit" class="btn-p" id="saveBtn">Сохранить</button></div>
-<div class="fa" id="saveMoreRow" style="display:none"><button type="button" class="btn-s fw" id="saveMoreBtn">Сохранить и создать ещё</button></div>
+<div class="fa hidden" id="saveMoreRow"><button type="button" class="btn-s fw" id="saveMoreBtn">Сохранить и создать ещё</button></div>
 </form>
 </div>
 </div>
@@ -208,7 +212,7 @@
 <div class="mh"><h2 id="fModalTitle" class="grad-text">Фильтры</h2><button class="ibtn-s" data-close-modal aria-label="Закрыть"></button></div>
 <div class="fg"><label for="fSelect">Тип</label><div class="select-wrap"><select id="fSelect"><option value="all">Все счётчики</option><option value="elapsed">Только «прошло»</option><option value="countdown">Только «осталось»</option></select></div></div>
 <div class="fg"><label for="sortSelect">Сортировка</label><div class="select-wrap"><select id="sortSelect"><option value="order">Мой порядок</option><option value="created">Сначала новые</option><option value="date">По дате события</option><option value="name">По алфавиту</option></select></div></div>
-<div class="fg"><label for="catSelect">Категория</label><div class="select-wrap"><select id="catSelect"><option value="all">Все категории</option><option value="">Без категории</option><option value="work">Работа</option><option value="health">Здоровье</option><option value="personal">Личное</option><option value="study">Учёба</option><option value="travel">Путешествия</option></select></div></div>
+<div class="fg"><label for="catSelect">Категория</label><div class="select-wrap"><select id="catSelect"></select></div></div>
 <div class="fg"><label>Шаблоны</label><div class="tpl-grid"></div></div>
 <div class="fa"><button class="btn-s" id="exportImgBtn">Картинка</button><button class="btn-p" id="applyFBtn">Применить</button></div>
 </div>
@@ -220,80 +224,35 @@
 <div class="mc-handle" aria-hidden="true"></div>
 <div class="mc-scroll">
 <div class="mh"><h2 id="sModalTitle" class="grad-text">Настройки</h2><button class="ibtn-s" data-close-modal aria-label="Закрыть"></button></div>
+<div class="sg"><h3>Внешний вид</h3><div class="sr"><label for="themeSel">Тема</label><div class="select-wrap select-sm"><select id="themeSel"><option value="system">Системная</option><option value="dark">Тёмная</option><option value="light">Светлая</option></select></div></div><div class="sr sr-switch"><label for="animToggle">Анимации</label><label class="sw"><input type="checkbox" id="animToggle" checked><span class="sl"></span></label></div><div class="sr"><label for="dateFormat">Формат даты</label><div class="select-wrap select-sm"><select id="dateFormat"><option value="DD.MM.YYYY">ДД.ММ.ГГГГ</option><option value="MM/DD/YYYY">ММ/ДД/ГГГГ</option><option value="YYYY-MM-DD">ГГГГ-ММ-ДД</option></select></div></div><div class="sr sr-switch"><label for="groupToggle">Группировать по категориям</label><label class="sw"><input type="checkbox" id="groupToggle"><span class="sl"></span></label></div></div>
+<div class="sg"><h3>Уведомления</h3><div class="sr sr-switch"><label for="notifEnabled">Включить</label><label class="sw"><input type="checkbox" id="notifEnabled" checked><span class="sl"></span></label></div><div class="sr"><label for="notifPeriod">Оповещать за</label><div class="select-wrap select-sm"><select id="notifPeriod"><option value="7">7 дней</option><option value="3" selected>3 дня</option><option value="1">1 день</option><option value="0">В день события</option></select></div></div><div class="sr sr-switch"><label for="praiseEnabled">Похвалы за привычки</label><label class="sw"><input type="checkbox" id="praiseEnabled" checked><span class="sl"></span></label></div><div class="sr"><label for="praiseInterval">Хвалить каждые</label><div class="select-wrap select-sm"><select id="praiseInterval"><option value="7">7 дней</option><option value="30" selected>30 дней</option><option value="100">100 дней</option><option value="365">1 год</option></select></div></div><p class="ai">Уведомления показываются, пока приложение открыто. Отдельные напоминания можно отключить кнопкой 🔔 на карточке.</p></div>
+<div class="sg"><h3>Данные</h3><button class="btn-s fw" id="exportBtn">Экспорт (JSON)</button><button class="btn-s fw" id="importBtn">Импорт</button><button class="btn-s fw" id="exportIcsBtn">Экспорт в календарь (.ics)</button><button class="btn-d fw" id="clearBtn">Очистить всё</button></div>
+<div class="sg"><h3>О приложении</h3><div class="about"><div class="about-logo" aria-hidden="true"><img class="logo" src="./icon.svg" alt="" width="48" height="48"></div><div class="about-name grad-text">ChronoFlow</div><div class="about-ver" id="aboutVer"></div><p class="about-tag">Время на вашей стороне</p></div><p class="ai">ChronoFlow — офлайн-таймер для всего, что важно. Считайте дни, часы, минуты и секунды до событий или после них. Точность до секунды — фирменная особенность приложения.</p><ul class="about-features"><li>Точность до секунды</li><li>Автоопределение: «прошло» или «осталось»</li><li>G-SHOCK-часы: сегменты дня, Луна</li><li>Фон часов в стиле EFT</li><li>Категории и повторяющиеся счётчики</li><li>Напоминания и похвалы за привычки</li><li>Свайпы, drag-and-drop, pull-to-refresh</li><li>Экспорт JSON / PNG / ICS</li><li>Полностью офлайн PWA</li></ul>
+<div class="about-links"><a href="./about.html" rel="noopener" class="about-link"><span class="link-icon"><img class="logo" src="./icon.svg" alt="" width="22" height="22"></span><span class="link-label">О проекте</span><span class="link-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></span></a><a href="./privacy.html" rel="noopener" class="about-link"><span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span><span class="link-label">Политика конфиденциальности</span><span class="link-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></span></a><a href="./terms.html" rel="noopener" class="about-link"><span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6"/></svg></span><span class="link-label">Условия использования</span><span class="link-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></span></a><a href="https://github.com/dituals758/ChronoFlow" target="_blank" rel="noopener noreferrer" class="about-link"><span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 8l4 4-4 4M8 8l-4 4 4 4"/></svg></span><span class="link-label">GitHub</span><span class="link-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></span></a></div>
+<div class="about-credits"><p class="ai">Разработано: <strong>dituals758</strong></p><p class="ai">AI-соавтор: <strong>DeepSeek</strong></p><p class="ai about-credits-license">Лицензия: <strong>MIT</strong></p><p class="ai about-credits-copy">© 2026 ChronoFlow</p></div></div>
+<div class="sg"><h3>Что нового</h3><div class="changelog" id="changelogBlock"><h4 id="changelogTitle" class="grad-text">Версия 2026.10.26</h4><ul id="changelogList"><li>Загрузка…</li></ul><span class="date" id="changelogDate">Выпущено 26 октября 2026 г.</span></div></div>
+</div>
+</div>
+</div>
+<div class="modal" id="moonModal" role="dialog" aria-modal="true" aria-labelledby="moonTitle">
+<div class="modal-backdrop" data-close-modal aria-hidden="true"></div>
+<div class="mc">
+<div class="mc-handle" aria-hidden="true"></div>
+<div class="mc-scroll">
+<div class="mh"><h2 id="moonTitle" class="grad-text">Фаза Луны</h2><button class="ibtn-s" data-close-modal aria-label="Закрыть"></button></div>
 <div class="sg">
-<h3>Внешний вид</h3>
-<div class="sr"><label for="themeSel">Тема</label><div class="select-wrap select-sm"><select id="themeSel"><option value="system">Системная</option><option value="dark">Тёмная</option><option value="light">Светлая</option></select></div></div>
-<div class="sr"><label for="animToggle">Анимации</label><label class="sw"><input type="checkbox" id="animToggle" checked><span class="sl"></span></label></div>
-<div class="sr"><label for="dateFormat">Формат даты</label><div class="select-wrap select-sm"><select id="dateFormat"><option value="DD.MM.YYYY">ДД.ММ.ГГГГ</option><option value="MM/DD/YYYY">ММ/ДД/ГГГГ</option><option value="YYYY-MM-DD">ГГГГ-ММ-ДД</option></select></div></div>
-<div class="sr"><label for="weekStart">Начало недели</label><div class="select-wrap select-sm"><select id="weekStart"><option value="1">Понедельник</option><option value="0">Воскресенье</option></select></div></div>
-<div class="sr"><label for="groupToggle">Группировать по категориям</label><label class="sw"><input type="checkbox" id="groupToggle"><span class="sl"></span></label></div>
+<div class="moon-hero"><div id="moonModalIcon" class="moon-hero-icon"></div><h3 id="moonModalName" class="moon-hero-name"></h3></div>
+<div class="sr"><span>Следующее новолуние</span><span id="moonNextNew" class="moon-date"></span></div>
+<div class="sr"><span>Следующее полнолуние</span><span id="moonNextFull" class="moon-date"></span></div>
+<p class="ai">Фазы Луны рассчитываются по синодическому циклу (29,53 суток) от новолуния 6 января 2000 года.</p>
 </div>
-<div class="sg">
-<h3>Уведомления</h3>
-<div class="sr"><label for="notifEnabled">Включить</label><label class="sw"><input type="checkbox" id="notifEnabled" checked><span class="sl"></span></label></div>
-<div class="sr"><label for="notifPeriod">Оповещать за</label><div class="select-wrap select-sm"><select id="notifPeriod"><option value="7">7 дней</option><option value="3" selected>3 дня</option><option value="1">1 день</option><option value="0">В день события</option></select></div></div>
-<div class="sr"><label for="praiseEnabled">Похвалы за привычки</label><label class="sw"><input type="checkbox" id="praiseEnabled" checked><span class="sl"></span></label></div>
-<div class="sr"><label for="praiseInterval">Хвалить каждые</label><div class="select-wrap select-sm"><select id="praiseInterval"><option value="7">7 дней</option><option value="30" selected>30 дней</option><option value="100">100 дней</option><option value="365">1 год</option></select></div></div>
-<p class="ai">Уведомления показываются, пока приложение открыто. Отдельные напоминания можно отключить кнопкой 🔔 на карточке.</p>
-</div>
-<div class="sg">
-<h3>Данные</h3>
-<button class="btn-s fw" id="exportBtn">Экспорт (JSON)</button>
-<button class="btn-s fw" id="importBtn">Импорт</button>
-<button class="btn-s fw" id="exportIcsBtn">Экспорт в календарь (.ics)</button>
-<button class="btn-d fw" id="clearBtn">Очистить всё</button>
-</div>
-<div class="sg">
-<h3>О приложении</h3>
-<div class="about">
-<div class="about-logo" aria-hidden="true"><img class="logo" src="./icon.svg" alt="" width="48" height="48"></div>
-<div class="about-name grad-text">ChronoFlow</div>
-<div class="about-ver" id="aboutVer"></div>
-<p class="about-tag">Время на вашей стороне</p>
-</div>
-<p class="ai">ChronoFlow — офлайн-таймер для всего, что важно. Считайте дни, часы, минуты и секунды до событий или после них. Точность до секунды — фирменная особенность приложения.</p>
-<ul class="about-features">
-<li>Точность до секунды — всегда актуальный результат</li>
-<li>Автоопределение: «прошло» или «осталось»</li>
-<li>G-SHOCK-часы: сегменты дня, Луна</li>
-<li>Фон часов в стиле EFT: сетка, перекрестие, углы</li>
-<li>Категории и повторяющиеся счётчики</li>
-<li>Напоминания и похвалы за привычки</li>
-<li>Свайпы, drag-and-drop, pull-to-refresh</li>
-<li>Экспорт JSON / PNG / ICS</li>
-<li>Полностью офлайн PWA</li>
-</ul>
-<div class="about-links">
-<a href="./about.html" rel="noopener" class="about-link"><span class="link-icon"><img class="logo" src="./icon.svg" alt="" width="22" height="22"></span><span class="link-label">О проекте</span><span class="link-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></span></a>
-<a href="./privacy.html" rel="noopener" class="about-link"><span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span><span class="link-label">Политика конфиденциальности</span><span class="link-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></span></a>
-<a href="./terms.html" rel="noopener" class="about-link"><span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6"/></svg></span><span class="link-label">Условия использования</span><span class="link-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></span></a>
-<a href="https://github.com/dituals758/ChronoFlow" target="_blank" rel="noopener noreferrer" class="about-link"><span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 8l4 4-4 4M8 8l-4 4 4 4"/></svg></span><span class="link-label">GitHub</span><span class="link-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></span></a>
-</div>
-<div class="about-credits">
-<p class="ai">Разработано: <strong>dituals758</strong></p>
-<p class="ai">AI-соавтор: <strong>MiMo Code</strong> (Xiaomi MiMo Team)</p>
-<p class="ai" style="margin-top:4px;">Лицензия: <strong>MIT</strong></p>
-<p class="ai" style="margin-top:4px;font-size:12px;color:var(--t3);">© 2026 ChronoFlow</p>
-</div>
-</div>
-<div class="sg">
-<h3>Что нового</h3>
-<div class="changelog" id="changelogBlock">
-<h4 id="changelogTitle" class="grad-text">Версия 2026.10.14</h4>
-<ul id="changelogList"><li>Загрузка…</li></ul>
-<span class="date" id="changelogDate">Выпущено 14 октября 2026 г.</span>
-</div>
-</div>
+<div class="fa"><button class="btn-p" data-close-modal>Понятно</button></div>
 </div>
 </div>
 </div>
 <div class="confirm-modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMsg">
 <div class="confirm-backdrop"></div>
-<div class="confirm-box">
-<h3 id="confirmTitle">Подтверждение</h3>
-<p id="confirmMsg">Вы уверены?</p>
-<div class="confirm-actions"><button class="btn-s fw" id="confirmCancel">Отмена</button><button class="btn-s fw btn-danger" id="confirmOk">Удалить</button></div>
-</div>
+<div class="confirm-box"><h3 id="confirmTitle">Подтверждение</h3><p id="confirmMsg">Вы уверены?</p><div class="confirm-actions"><button class="btn-s fw" id="confirmCancel">Отмена</button><button class="btn-s fw btn-danger" id="confirmOk">Удалить</button></div></div>
 </div>
 <label for="importFile" class="sr-only">Импорт данных из JSON</label>
 <input type="file" id="importFile" accept=".json,application/json" class="hidden">

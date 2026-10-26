@@ -2,11 +2,11 @@
 
 [![PWA](https://img.shields.io/badge/PWA-Offline%20Ready-blue)](https://dituals758.github.io/ChronoFlow/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2026.10.14-green)](https://dituals758.github.io/ChronoFlow/changelog.json)
+[![Version](https://img.shields.io/badge/version-2026.10.26-green)](https://dituals758.github.io/ChronoFlow/changelog.json)
 
 > Не курю 45 дней. До отпуска 128 дней. На новой работе уже 2 года. ChronoFlow считает каждый день, час, минуту и секунду — и помогает не сбиться с пути.
 
-**Версия 2026.10.14**
+**Версия 2026.10.26**
 
 ## ⏱ Секундная точность — фирменная особенность
 
@@ -30,6 +30,7 @@ ChronoFlow обновляет счётчики **каждую секунду**. 
 - Ripple-волна, skeleton-загрузка, confetti
 - Экспорт JSON / PNG / ICS
 - Полностью офлайн PWA
+- Клик по Луне — фазы и даты новолуния/полнолуния
 
 ## 📱 Совместимость
 
@@ -45,7 +46,11 @@ ChronoFlow обновляет счётчики **каждую секунду**. 
 - `clock.js` — автономный модуль часов и фона
 - `clock.css` — стили модуля часов
 - `styles.css` — основные стили приложения
-- `sw.js` — Service Worker
+- `sw.js` — Service Worker (офлайн-первый, cache-first навигация)
+
+## 🧠 AI-соавтор
+
+DeepSeek
 
 ## 📄 Лицензия
 

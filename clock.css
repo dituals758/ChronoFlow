@@ -20,6 +20,11 @@
 .lt .clock-corner-value{color:#007aff}
 .lt .clock-day-progress{background:rgba(0,122,255,.1)}
 .lt .clock-day-progress-fill{background:linear-gradient(90deg,#007aff,#af52de);box-shadow:0 0 6px rgba(0,122,255,.6)}
+.moon-wrap{cursor:pointer;pointer-events:auto}
+.moon-hero{text-align:center;padding:8px 0 16px}
+.moon-hero-icon{font-size:64px;line-height:1}
+.moon-hero-name{font:700 22px/28px var(--fn);margin-top:8px}
+.moon-date{font:400 14px/20px var(--fn);color:var(--t2)}
 @media (max-width:420px){.clock-corner{font-size:7px}.clock-corner-label{font-size:6px}.clock-corner-value{font-size:8px}.clock-corner-tl{top:14px;left:18px}.clock-corner-tr{top:14px;right:18px}.clock-corner-bl{bottom:14px;left:18px}.clock-corner-br{bottom:14px;right:18px}.clock-day-progress{left:18px;right:18px;bottom:6px}}
 @media (min-width:1024px){.clock-corner{font-size:10px}.clock-corner-label{font-size:8px}.clock-corner-value{font-size:11px}}
 @media (prefers-reduced-motion:reduce){.clock-status-online{animation:none}.cf-crosshair{animation:none}.clock-day-progress-fill{transition:none}}
